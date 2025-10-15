@@ -1,0 +1,19 @@
+{
+    "compilerOptions": {
+      "target": "ES6",
+      "module": "ESNext",
+      "baseUrl": "./",
+      "paths": {
+        "@/*": ["resources/js/*"],
+        "@components/*": ["./resources/js/components/*"],
+        "@resources/*": ["./resources/*"],
+        "@img/*": ["./resources/img/*"],
+        "@css/*": ["./resources/css/*"]
+      }
+    },
+    "include": [
+      "resources/js/**/*.js",
+      "resources/js/**/*.vue"
+    ]
+  }
+  
