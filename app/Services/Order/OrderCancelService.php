@@ -7,13 +7,13 @@ use App\Exceptions\Order\CompletedOrderCannotBeCanceledException;
 use App\Exceptions\Order\OrderAlreadyCanceledException;
 use App\Models\Order;
 use App\Models\OrderItem;
-use App\Services\Product\Stock\StockReserver;
+use App\Services\Product\ProductSaleManager;
 use Illuminate\Support\Facades\DB;
 
 readonly class OrderCancelService
 {
     public function __construct(
-        private StockReserver $stockReserver,
+        private ProductSaleManager $saleManager,
     ) {
     }
 
@@ -33,7 +33,7 @@ readonly class OrderCancelService
             $order->save();
 
             $order->items->each(function (OrderItem $item) {
-                $this->stockReserver->unreserve($item->stockItem);
+                $this->saleManager->cancelReservation($item->stock_item_id);
             });
         });
     }

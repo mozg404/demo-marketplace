@@ -120,6 +120,8 @@ class Product extends Model implements Seoble, HasMedia
         'status',
         'image',
         'category_id',
+        'description',
+        'instruction',
     ];
 
     protected function casts(): array

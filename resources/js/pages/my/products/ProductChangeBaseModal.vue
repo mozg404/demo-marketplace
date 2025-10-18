@@ -6,20 +6,25 @@ import {LoaderCircle} from 'lucide-vue-next';
 import {Button} from '@/components/ui/button/index.js'
 import {useForm} from "@inertiajs/vue3";
 import ErrorMessage from "@/components/shared/ErrorMessage.vue";
-import {NumberField, NumberFieldContent, NumberFieldInput} from "@/components/ui/number-field/index.js";
+import {Input} from "@/components/ui/input/index.js";
 import {showToastsFromFormData} from "@/composables/useToasts.js";
+import {NumberField, NumberFieldContent, NumberFieldInput} from "@components/ui/number-field/index.js";
+import CategorySelect from "@components/modules/products/CategorySelect.vue";
 
 const props = defineProps({
   product: Object,
+  categoriesTree: Array,
 })
 const form = useForm({
+  category_id: props.product.category_id,
+  name: props.product.name,
   price_base: props.product.price.base,
   price_discount: props.product.price.discount,
   _method: 'PATCH',
 })
 
 const modalRef = ref(null)
-const submit = () => form.post(route('my.products.change.price.update', props.product.id), {
+const submit = () => form.post(route('my.products.change.base.update', props.product.id), {
   onSuccess: (data) => {
     showToastsFromFormData(data)
     modalRef.value.close()
@@ -29,10 +34,23 @@ const submit = () => form.post(route('my.products.change.price.update', props.pr
 
 <template>
   <Modal max-width="2xl" ref="modalRef">
-    <div class="text-2xl font-semibold mb-8">Редактирование цены</div>
+    <div class="text-2xl font-semibold mb-8">Редактирование основной информации</div>
 
     <form @submit.prevent="submit" class="flex flex-col gap-6">
       <div class="grid gap-6">
+
+        <div class="grid gap-3">
+          <Label for="category_id">Категория</Label>
+          <CategorySelect v-model="form.category_id" :categories="categoriesTree"/>
+          <ErrorMessage :message="form.errors.category_id"/>
+        </div>
+
+        <div class="grid gap-3">
+          <Label for="name">Новое название</Label>
+          <Input id="name" v-model="form.name" />
+          <ErrorMessage :message="form.errors.name"/>
+        </div>
+
         <div class="grid grid-cols-2 gap-6 items-start">
           <NumberField id="price_base" v-model="form.price_base" class="gap-3">
             <Label for="price_base">Цена</Label>

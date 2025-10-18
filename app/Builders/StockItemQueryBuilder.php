@@ -41,7 +41,7 @@ class StockItemQueryBuilder extends Builder
         return $this->isAvailable()->isActiveProduct();
     }
 
-    public function forProduct(int|Product $id): static
+    public function whereProduct(int|Product $id): static
     {
         if (is_object($id)) {
             $id = $id->id;
@@ -86,5 +86,10 @@ class StockItemQueryBuilder extends Builder
     public function withSeller(): self
     {
         return $this->with('seller');
+    }
+
+    public function getIds(): array
+    {
+        return $this->pluck('id')->toArray();
     }
 }

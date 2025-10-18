@@ -6,7 +6,7 @@ use App\Models\Feature;
 use App\Models\Product;
 use App\Models\ProductFeatureValue;
 use App\Services\Product\ProductFeatureAttacher;
-use App\Services\Product\ProductService;
+use App\Services\Product\ProductManager;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 

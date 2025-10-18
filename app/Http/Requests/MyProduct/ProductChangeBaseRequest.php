@@ -3,10 +3,11 @@
 namespace App\Http\Requests\MyProduct;
 
 use App\DTO\Product\ProductBaseCreateDto;
+use App\DTO\Product\ProductUpdateBaseDto;
 use App\ValueObjects\Price;
 use Illuminate\Foundation\Http\FormRequest;
 
-class ProductCreateRequest extends FormRequest
+class ProductChangeBaseRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -23,9 +24,9 @@ class ProductCreateRequest extends FormRequest
         ];
     }
 
-    public function getDto(): ProductBaseCreateDto
+    public function getDto(): ProductUpdateBaseDto
     {
-        return ProductBaseCreateDto::from([
+        return ProductUpdateBaseDto::from([
             'category_id' => $this->validated('category_id'),
             'name' => $this->validated('name'),
             'price' => Price::fromBaseAndDiscount(

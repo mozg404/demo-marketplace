@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Data\Products\ProductForListingData;
-use App\Services\Category\CategoryQuery;
+use App\Services\Category\CategoryRepository;
 use App\Services\Product\ProductQuery;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -12,7 +12,7 @@ class IndexController extends Controller
 {
     public function __invoke(
         ProductQuery $productQuery,
-        CategoryQuery $categoryQuery,
+        CategoryRepository $categoryQuery,
     ): Response {
         $discounted = $productQuery->query()
             ->forListingPreset()

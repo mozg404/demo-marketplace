@@ -55,8 +55,8 @@ class OrderFromCartCreatorTest extends TestCase
             'amount' => $product1->price->getCurrentPrice() * 2 + $product2->price->getCurrentPrice(),
         ]);
 
-        $this->assertEquals(1, StockItem::query()->forProduct($product1)->isAvailable()->count());
-        $this->assertEquals(2, StockItem::query()->forProduct($product1)->isReserved()->count());
-        $this->assertEquals(1, StockItem::query()->forProduct($product2)->isReserved()->count());
+        $this->assertEquals(1, StockItem::query()->whereProduct($product1)->isAvailable()->count());
+        $this->assertEquals(2, StockItem::query()->whereProduct($product1)->isReserved()->count());
+        $this->assertEquals(1, StockItem::query()->whereProduct($product2)->isReserved()->count());
     }
 }

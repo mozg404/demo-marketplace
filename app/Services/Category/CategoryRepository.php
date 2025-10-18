@@ -6,7 +6,7 @@ use App\Builders\CategoryQueryBuilder;
 use App\Exceptions\Category\CategoryNotFoundException;
 use App\Models\Category;
 
-class CategoryQuery
+class CategoryRepository
 {
     public function query(): CategoryQueryBuilder
     {

@@ -33,8 +33,7 @@ readonly class DemoOrderCreator
         return $this->orderCreator->create(
             user: $user,
             items: CreatableOrderItemCollection::fromProductCollection($products),
-            createdAt: new Carbon(fake()->dateTimeBetween('-1 year'))
-        );
+        )->update(['created_at' => new Carbon(fake()->dateTimeBetween('-1 year'))]);
     }
 
     public function complete(Order $order): void

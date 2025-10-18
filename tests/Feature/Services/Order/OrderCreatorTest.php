@@ -97,8 +97,8 @@ class OrderCreatorTest extends TestCase
 
         // Проверка на резервацию
         // 1 доступен из 3
-        $this->assertEquals(1, StockItem::query()->forProduct($product)->isAvailable()->count());
+        $this->assertEquals(1, StockItem::query()->whereProduct($product)->isAvailable()->count());
         // 2 зарезервировано из 3
-        $this->assertEquals(2, StockItem::query()->forProduct($product)->isReserved()->count());
+        $this->assertEquals(2, StockItem::query()->whereProduct($product)->isReserved()->count());
     }
 }

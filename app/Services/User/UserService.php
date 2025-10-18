@@ -33,7 +33,7 @@ readonly class UserService
     public function updateAvatar(User $user, UserUpdateAvatarDto $dto): void
     {
         $user->clearMediaCollection($user::MEDIA_COLLECTION_AVATAR);
-        $user->addMedia($dto->avatar)->toMediaCollection($user::MEDIA_COLLECTION_AVATAR);
+        $user->addMedia($dto->image)->toMediaCollection($user::MEDIA_COLLECTION_AVATAR);
     }
 
     public function updateAvatarFromPath(User $user, string $path): void

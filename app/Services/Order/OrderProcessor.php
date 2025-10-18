@@ -3,7 +3,6 @@
 namespace App\Services\Order;
 
 use App\Enum\TransactionType;
-use App\Exceptions\Balance\InsufficientFundsException;
 use App\Exceptions\Order\OrderAlreadyProcessedException;
 use App\Models\Order;
 use App\Models\OrderItem;

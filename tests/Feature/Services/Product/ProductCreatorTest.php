@@ -6,7 +6,7 @@ use App\Models\Category;
 use App\Models\Product;
 use App\Models\User;
 use App\Services\Product\ProductCreator;
-use App\Services\Product\ProductService;
+use App\Services\Product\ProductManager;
 use App\ValueObjects\Price;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;

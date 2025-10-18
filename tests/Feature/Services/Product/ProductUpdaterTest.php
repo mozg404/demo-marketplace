@@ -3,7 +3,7 @@
 namespace Tests\Feature\Services\Product;
 
 use App\Models\Product;
-use App\Services\Product\ProductService;
+use App\Services\Product\ProductManager;
 use App\Services\Product\ProductUpdater;
 use App\ValueObjects\Price;
 use Illuminate\Foundation\Testing\RefreshDatabase;

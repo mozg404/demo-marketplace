@@ -82,7 +82,7 @@ class ExpressOrderCreatorTest extends TestCase
         ]);
 
         // Проверка на резервацию
-        $this->assertEquals(2, StockItem::query()->forProduct($product)->isAvailable()->count());
-        $this->assertEquals(1, StockItem::query()->forProduct($product)->isReserved()->count());
+        $this->assertEquals(2, StockItem::query()->whereProduct($product)->isAvailable()->count());
+        $this->assertEquals(1, StockItem::query()->whereProduct($product)->isReserved()->count());
     }
 }

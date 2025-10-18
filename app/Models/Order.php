@@ -68,6 +68,7 @@ class Order extends Model implements Transactionable, Sourceable, Seoble
         'user_id',
         'status',
         'amount',
+        'created_at',
     ];
 
     public function isPending(): bool

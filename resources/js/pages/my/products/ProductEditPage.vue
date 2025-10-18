@@ -64,9 +64,7 @@ const props = defineProps({
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent>
-                  <DropdownModalLink :href="route('my.products.change.name', product.id)">Изменить название</DropdownModalLink>
-                  <DropdownModalLink :href="route('my.products.change.category', product.id)">Изменить категорию</DropdownModalLink>
-                  <DropdownModalLink :href="route('my.products.change.price', product.id)">Изменить цену</DropdownModalLink>
+                  <DropdownModalLink :href="route('my.products.change.base', product.id)">Изменить основу</DropdownModalLink>
                   <DropdownModalLink :href="route('my.products.change.features', product.id)">Изменить характеристики</DropdownModalLink>
                   <DropdownModalLink :href="route('my.products.change.image', product.id)">Изменить изображение</DropdownModalLink>
                   <DropdownModalLink :href="route('my.products.change.description', product.id)">Изменить описание</DropdownModalLink>
@@ -89,7 +87,7 @@ const props = defineProps({
             <Badge variant="secondary">{{ product.category.name }}</Badge>
 
             <Button size="icon" variant="ghost" class="ml-3 p-1 w-6 h-6" as-child>
-              <ModalLink :href="route('my.products.change.category', product.id)">
+              <ModalLink :href="route('my.products.change.base', product.id)">
                 <Pencil />
               </ModalLink>
             </Button>
@@ -99,7 +97,7 @@ const props = defineProps({
             {{ product.name }}
 
             <Button size="icon" variant="ghost" class="ml-2 p-1 w-8 h-8" as-child>
-              <ModalLink :href="route('my.products.change.name', product.id)">
+              <ModalLink :href="route('my.products.change.base', product.id)">
                 <Pencil />
               </ModalLink>
             </Button>
@@ -177,7 +175,7 @@ const props = defineProps({
                 </div>
 
                 <Button size="icon" variant="ghost" class="ml-3" as-child>
-                  <ModalLink :href="route('my.products.change.price', product.id)">
+                  <ModalLink :href="route('my.products.change.base', product.id)">
                     <Pencil />
                   </ModalLink>
                 </Button>

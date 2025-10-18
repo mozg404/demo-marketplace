@@ -4,8 +4,7 @@ namespace Tests\Feature\Services\Product\Stock;
 
 use App\Models\Product;
 use App\Models\StockItem;
-use App\Services\Product\Stock\StockQuery;
-use App\Services\Product\Stock\StockService;
+use App\Services\Stock\StockRepository;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -13,13 +12,13 @@ class StockQueryTest extends TestCase
 {
     use RefreshDatabase;
 
-    private StockQuery $stockQuery;
+    private StockRepository $stockQuery;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->stockQuery = app(StockQuery::class);
+        $this->stockQuery = app(StockRepository::class);
     }
 
     public function testGetAvailableStockCount()
