@@ -2,17 +2,13 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\DTO\Auth\AuthLoginDTO;
 use App\Exceptions\Auth\AuthenticationFailedException;
 use App\Exceptions\Auth\EmailVerification\EmailNotVerifiedException;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Auth\LoginStoreRequest;
-use App\Services\Auth\Authenticator;
-use App\Services\Auth\WebEmailVerificator;
+use App\Services\Auth\AuthService;
 use App\Services\Toaster;
-use App\Services\User\UserQuery;
 use App\Support\SeoBuilder;
-use App\ValueObjects\Email;
-use App\ValueObjects\Password;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
@@ -29,17 +25,12 @@ class LoginController extends Controller
     }
 
     public function store(
-        LoginStoreRequest $request,
-        Authenticator $authenticator,
-        WebEmailVerificator $verificator,
-        UserQuery $userQuery,
+        AuthLoginDTO $dto,
+        AuthService $authService,
         Toaster $toaster,
     ): RedirectResponse {
         try {
-            $authenticator->authenticate(
-                email: new Email($request->input('email')),
-                password: new Password($request->input('password')),
-            );
+            $authService->login($dto);
             $toaster->success('Успешная авторизация');
 
             return redirect()->intended(route('home'));
@@ -49,9 +40,6 @@ class LoginController extends Controller
                 ->withInput();
         } catch (EmailNotVerifiedException $exception) {
             $toaster->error($exception->getMessage());
-            $verificator->sendVerificationNotification(
-                $userQuery->getByEmail($request->input('email'))
-            );
 
             return redirect()->route('verification.notice');
         } catch (Throwable $exception) { // Ловим ЛЮБОЕ другое исключение
