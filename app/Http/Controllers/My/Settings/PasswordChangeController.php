@@ -2,12 +2,11 @@
 
 namespace App\Http\Controllers\My\Settings;
 
+use App\DTO\User\UserUpdatePasswordDto;
 use App\Exceptions\Auth\InvalidPasswordException;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\MySettings\PasswordChangeRequest;
 use App\Services\Toaster;
-use App\Services\User\UserPasswordChanger;
-use App\ValueObjects\Password;
+use App\Services\User\UserService;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -20,17 +19,13 @@ class PasswordChangeController extends Controller
     }
 
     public function update(
-        PasswordChangeRequest $request,
-        UserPasswordChanger $passwordChanger,
+        UserUpdatePasswordDto $dto,
+        UserService $service,
         Toaster $toaster,
     ): RedirectResponse
     {
         try {
-            $passwordChanger->changePassword(
-                user: auth()->user(),
-                oldPassword: new Password($request->input('old_password')),
-                newPassword: new Password($request->input('password')),
-            );
+            $service->updatePassword(auth()->user(), $dto);
             $toaster->success('Пароль успешно изменен');
 
             return redirect()->back();

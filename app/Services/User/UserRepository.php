@@ -5,6 +5,7 @@ namespace App\Services\User;
 use App\Builders\UserQueryBuilder;
 use App\Exceptions\User\EmailAlreadyExistsException;
 use App\Models\User;
+use Illuminate\Support\Carbon;
 
 class UserRepository
 {
@@ -13,7 +14,7 @@ class UserRepository
         return User::query();
     }
 
-    public function create(string $name, string $email, string $hashedPassword, bool $isAdmin = false): User
+    public function create(string $name, string $email, string $hashedPassword, bool $emailVerified = false, bool $isAdmin = false, ?Carbon $createdAt = null): User
     {
         if ($this->checkExistsByEmail($email)) {
             throw new EmailAlreadyExistsException();
@@ -24,13 +25,38 @@ class UserRepository
         $user->email = $email;
         $user->password = $hashedPassword;
 
+        if ($emailVerified) {
+            $user->email_verified_at = $user->freshTimestamp();
+        }
+
         if ($isAdmin) {
             $user->is_admin = true;
+        }
+
+        if ($createdAt) {
+            $user->created_at = $createdAt;
         }
 
         $user->save();
 
         return $user;
+    }
+
+    public function getRandomUser(): ?User
+    {
+        return $this->query()->withoutAdmin()->inRandomOrder()->first();
+    }
+
+    public function updateName(User $user, string $name): void
+    {
+        $user->name = $name;
+        $user->save();
+    }
+
+    public function updatePassword(User $user, string $hashedPassword): void
+    {
+        $user->password = $hashedPassword;
+        $user->save();
     }
 
     public function get(int $id): User

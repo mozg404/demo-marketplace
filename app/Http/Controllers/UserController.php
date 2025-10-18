@@ -7,16 +7,16 @@ use App\Data\User\UserForListingData;
 use App\Data\User\UserData;
 use App\Models\User;
 use App\Services\Product\ProductQuery;
-use App\Services\User\UserQuery;
+use App\Services\User\UserRepository;
 use App\Support\SeoBuilder;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class UserController extends Controller
 {
-    public function index(UserQuery $userQuery): Response
+    public function index(UserRepository $repository): Response
     {
-        $users = $userQuery->query()
+        $users = $repository->query()
             ->withMedia()
             ->withAvailableProductsCount()
             ->hasAvailableProducts()
