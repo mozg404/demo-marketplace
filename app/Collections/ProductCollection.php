@@ -2,7 +2,6 @@
 
 namespace App\Collections;
 
-use App\Data\Orders\CreatableOrderItemData;
 use App\Models\Product;
 use App\ValueObjects\Price;
 use Illuminate\Database\Eloquent\Collection;
@@ -21,7 +20,7 @@ class ProductCollection extends Collection
         $price = new Price(0);
 
         $this->each(function (Product $product) use (&$price) {
-            $price = $price->sumWith($product->price)->multiply($item->quantity);
+            $price = $price->sumWith($product->price);
         });
 
         return $price;
