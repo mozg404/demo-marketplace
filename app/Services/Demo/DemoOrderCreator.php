@@ -2,7 +2,6 @@
 
 namespace App\Services\Demo;
 
-use App\Collections\CreatableOrderItemCollection;
 use App\Enum\TransactionType;
 use App\Models\Order;
 use App\Models\Product;
