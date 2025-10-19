@@ -2,7 +2,7 @@
 
 namespace App\DTO\Order;
 
-use App\DTO\Product\PurchasableItemDto;
+use App\Services\Product\DTO\PurchasableItem;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\DataCollection;
@@ -10,7 +10,7 @@ use Spatie\LaravelData\DataCollection;
 class CreateOrderDto extends Data
 {
     public function __construct(
-        #[DataCollectionOf(PurchasableItemDto::class)]
+        #[DataCollectionOf(PurchasableItem::class)]
         public readonly DataCollection $items,
     ) {
     }

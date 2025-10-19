@@ -35,7 +35,7 @@ readonly class CartQuery
     {
         $items = $this->productQuery->query()
             ->whereIds($this->cart->getIds())
-            ->withAvailableStockItemsCount()
+            ->withAvailableCount()
             ->get()
             ?->map(function (Product $product) {
                 return CartItemData::from($product, $this->getQuantityFor($product));

@@ -2,12 +2,12 @@
 
 namespace App\Services\Order;
 
-use App\Collections\CreatableOrderItemCollection;
-use App\Data\Orders\CreatableOrderItemData;
 use App\Enum\OrderStatus;
 use App\Models\Order;
-use App\Models\User;
+use App\Services\Price\PriceService;
+use App\Services\Product\DTO\PurchasableItem;
 use App\Services\Product\ProductSaleManager;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Throwable;
 
@@ -15,40 +15,45 @@ readonly class OrderCreator
 {
     public function __construct(
         private ProductSaleManager $saleManager,
+        private PriceService $priceService,
     ) {
     }
 
     /**
+     * @param int $userId
+     * @param array<PurchasableItem>|Collection<PurchasableItem> $items
+     * @return Order
      * @throws Throwable
      */
-    public function create(User $user, CreatableOrderItemCollection $items): Order
+    public function create(int $userId, Collection|array $items): Order
     {
-        // Проверяем, что у товаров из списка есть нужное количество позиций на складе
-        $items->each(fn(CreatableOrderItemData $item) => $this->saleManager->ensureCanByPurchased($item->product, $item->quantity));
+        $this->saleManager->validatePurchasableItems($items);
 
-        // Создаем новый заказ
-        return DB::transaction(function () use ($user, $items) {
+        return DB::transaction(function () use ($userId, $items) {
+            $reservedProducts = $this->saleManager->reservePurchasableItems($items);
             $order = Order::create([
-                'user_id' => $user->id,
-                'amount' => $items->getTotalPrice()->getCurrentPrice(),
+                'user_id' => $userId,
+                'amount' => $this->priceService->calculateTotalQuantityPrice($reservedProducts)->getCurrentPrice(),
                 'status' => OrderStatus::PENDING,
             ]);
 
-            $items->each(function (CreatableOrderItemData $creatableItem) use ($order) {
-                $reserved = $this->saleManager->reserveForOrder($creatableItem->product->id, $creatableItem->quantity);
-
-                foreach ($reserved as $reservedItemId) {
+            foreach ($reservedProducts as $reservedProduct) {
+                foreach ($reservedProduct->stockIds as $stockId) {
                     $order->items()->create([
-                        'product_id' => $creatableItem->product->id,
-                        'stock_item_id' => $reservedItemId,
-                        'current_price' => $creatableItem->product->price->getCurrentPrice(),
-                        'base_price' => $creatableItem->product->price->getBasePrice(),
+                        'product_id' => $reservedProduct->productId,
+                        'stock_item_id' => $stockId,
+                        'current_price' => $reservedProduct->getPrice()->getCurrentPrice(),
+                        'base_price' => $reservedProduct->getPrice()->getBasePrice(),
                     ]);
                 }
-            });
+            }
 
             return $order->fresh();
         });
     }
 
+    public function createExpress(int $userId, PurchasableItem $item): Order
+    {
+        return $this->create($userId, [$item]);
+    }
 }

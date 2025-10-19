@@ -2,13 +2,12 @@
 
 namespace App\Services\Order;
 
-use App\Collections\CreatableOrderItemCollection;
-use App\Data\Orders\CreatableOrderItemData;
 use App\Events\OrderCreatedFromCart;
 use App\Models\Order;
-use App\Models\Product;
-use App\Models\User;
 use App\Services\Cart\CartQuery;
+use App\Services\Product\DTO\PurchasableItem;
+use Illuminate\Support\Collection;
+use LogicException;
 
 readonly class OrderFromCartCreator
 {
@@ -18,18 +17,19 @@ readonly class OrderFromCartCreator
     ) {
     }
 
-    public function create(User $user): Order
+    public function create(int $userId): Order
     {
-        $collection = new CreatableOrderItemCollection();
-
-        foreach ($this->cartQuery->all()?->items ?? [] as $item) {
-            $collection->add(new CreatableOrderItemData(
-                product: Product::find($item->product->id),
-                quantity: $item->quantity,
-            ));
+        if ($this->cartQuery->isEmpty()) {
+            throw new LogicException('Корзина пуста');
         }
 
-        $order = $this->creator->create($user, $collection);
+        $collection = new Collection();
+
+        foreach ($this->cartQuery->all()?->items ?? [] as $item) {
+            $collection->add(new PurchasableItem($item->product->id, $item->quantity));
+        }
+
+        $order = $this->creator->create($userId, $collection);
 
         event(new OrderCreatedFromCart($order));
 

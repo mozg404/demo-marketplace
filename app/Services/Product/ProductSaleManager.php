@@ -2,56 +2,77 @@
 
 namespace App\Services\Product;
 
+use App\Collections\ProductCollection;
 use App\Enum\StockItemStatus;
-use App\Exceptions\Product\NotEnoughStockException;
 use App\Exceptions\Product\ProductUnavailableException;
 use App\Models\Product;
 use App\Models\StockItem;
+use App\Services\Product\DTO\PurchasableItem;
+use App\Services\Product\DTO\ReservedProduct;
+use Illuminate\Support\Collection;
 
 class ProductSaleManager
 {
-    public function reserveForOrder(int $productId, int $quantity = 1): array
+    /** @param array<PurchasableItem>|Collection<PurchasableItem> $items */
+    public function validatePurchasableItems(array|Collection $items): void
     {
-        $reserved = StockItem::query()
-            ->whereProduct($productId)
-            ->isAvailable()
-            ->take($quantity)
-            ->getIds();
+        $ids = collect($items)->pluck('productId')->toArray();
 
-        if (count($reserved) !== $quantity) {
-            throw new NotEnoughStockException();
+        /** @var ProductCollection $products */
+        $products = Product::query()
+            ->select(['id', 'status'])
+            ->withAvailableCount()
+            ->whereIds($ids)
+            ->get();
+
+        foreach ($items as $item) {
+            $product = $products->where('id', $item->productId)->first();
+
+            if (!$product || !$product->isActive() || $product->available_count < $item->quantity) {
+                throw new ProductUnavailableException();
+            }
+        }
+    }
+
+    /**
+     * @param array<PurchasableItem>|Collection<PurchasableItem> $items
+     * @return Collection<ReservedProduct>
+     */
+    public function reservePurchasableItems(array|Collection $items): Collection
+    {
+        if (is_array($items)) {
+            $items = collect($items);
         }
 
-        foreach ($reserved as $id) {
-            StockItem::query()->whereId($id)->update(['status' => StockItemStatus::RESERVED]);
-        }
+        return Product::query()
+            ->select(['id', 'current_price', 'base_price'])
+            ->whereIds($items->pluck('productId')->toArray())
+            ->get()
+            ->map(function (Product $product) use ($items) {
+                /** @param PurchasableItem $purchasable */
+                $purchasable = $items->where('productId', $product->id)->first();
 
-        return $reserved;
+                return new ReservedProduct(
+                    $product->id,
+                    $purchasable->quantity,
+                    $product->price,
+                    StockItem::query()
+                        ->select(['id', 'product_id', 'status'])
+                        ->whereProduct($product)
+                        ->isAvailable()
+                        ->take($purchasable->quantity)
+                        ->get()
+                        ->each(static function (StockItem $stockItem) {
+                            $stockItem->markAsReserved();
+                        })
+                        ->pluck('id')
+                        ->toArray(),
+                );
+            });
     }
 
     public function cancelReservation(int $stockItemId): void
     {
         StockItem::query()->whereId($stockItemId)->update(['status' => StockItemStatus::AVAILABLE]);
-    }
-
-    public function getAvailableCount(Product $product): int
-    {
-        return $product->stockItems()->isAvailable()->count();
-    }
-
-    public function hasEnoughStock(Product $product, int $quantity = 1): bool
-    {
-        return $this->getAvailableCount($product) >= $quantity;
-    }
-
-    public function ensureCanByPurchased(Product $product, int $quantity = 1): void
-    {
-        if (!$product->isActive()) {
-            throw new ProductUnavailableException();
-        }
-
-        if (!$this->hasEnoughStock($product, $quantity)) {
-            throw new NotEnoughStockException();
-        }
     }
 }
