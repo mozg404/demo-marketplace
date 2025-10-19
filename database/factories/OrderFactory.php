@@ -83,7 +83,6 @@ class OrderFactory extends Factory
                 $amount += $product->current_price;
                 $stockItem->update([
                     'status' => StockItemStatus::RESERVED->value,
-                    'order_item_id' => $orderItem->id,
                 ]);
             });
 
