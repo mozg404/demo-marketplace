@@ -3,18 +3,21 @@
 namespace App\Services\Cart;
 
 use App\Models\Product;
-use App\Services\Stock\StockService;
+use App\Services\Product\DTO\PurchasableItem;
+use App\Services\Product\ProductSaleManager;
 
 readonly class CartValidator
 {
     public function __construct(
+        private ProductSaleManager $saleManager,
         private CartQuery $cartQuery,
-        private StockService $stockService,
     ) {
     }
 
     public function validateAdd(Product $product, int $quantity = 1): void
     {
-        $this->stockService->ensureStockAvailable($product, $this->cartQuery->getQuantityFor($product) + $quantity);
+        $this->saleManager->validatePurchasableItems([
+            new PurchasableItem($product->id, $quantity + $this->cartQuery->getQuantityFor($product))
+        ]);
     }
 }

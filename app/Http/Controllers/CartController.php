@@ -3,10 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Exceptions\Product\NotEnoughStockException;
+use App\Exceptions\Product\ProductUnavailableException;
 use App\Models\Product;
 use App\Services\Cart\CartManager;
 use App\Services\Cart\CartQuery;
-use App\Services\Cart\CartService;
 use App\Services\Cart\CartValidator;
 use App\Services\Toaster;
 use App\Support\SeoBuilder;
@@ -43,7 +43,7 @@ class CartController extends Controller
             $this->toaster->success('Добавлено в корзину');
 
             return back();
-        } catch (NotEnoughStockException $e) {
+        } catch (ProductUnavailableException $e) {
             $this->toaster->error($e->getMessage());
 
             return back();

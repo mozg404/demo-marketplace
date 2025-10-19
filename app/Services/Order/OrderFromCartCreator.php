@@ -5,8 +5,6 @@ namespace App\Services\Order;
 use App\Events\OrderCreatedFromCart;
 use App\Models\Order;
 use App\Services\Cart\CartQuery;
-use App\Services\Product\DTO\PurchasableItem;
-use Illuminate\Support\Collection;
 use LogicException;
 
 readonly class OrderFromCartCreator
@@ -23,13 +21,7 @@ readonly class OrderFromCartCreator
             throw new LogicException('Корзина пуста');
         }
 
-        $collection = new Collection();
-
-        foreach ($this->cartQuery->all()?->items ?? [] as $item) {
-            $collection->add(new PurchasableItem($item->product->id, $item->quantity));
-        }
-
-        $order = $this->creator->create($userId, $collection);
+        $order = $this->creator->create($userId, $this->cartQuery->all()->toPurchasableItems());
 
         event(new OrderCreatedFromCart($order));
 

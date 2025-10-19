@@ -21,8 +21,8 @@ class ProductData extends Data
         public ?UserData $user = null,
         public Carbon $created_at,
         public ?int $stock_items_count = null,
-        public ?int $available_stock_items_count = null,
-        public ?int $reserved_stock_items_count = null,
+        public ?int $available_count = null,
+        public ?int $reserved_count = null,
     ) {
     }
 }

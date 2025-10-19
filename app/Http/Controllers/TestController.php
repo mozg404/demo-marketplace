@@ -2,12 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Contracts\Cart;
 use App\Models\Category;
-use App\Models\Product;
-use App\Services\Price\PriceService;
-use App\Services\Product\DTO\PurchasableItem;
-use App\Services\Product\DTO\ReservedProduct;
-use App\ValueObjects\Price;
+use App\Services\Cart\CartService;
 use Inertia\Inertia;
 
 class TestController extends Controller
@@ -16,16 +13,12 @@ class TestController extends Controller
     public function __construct()
     {}
 
-    public function test(PriceService $service): mixed
+    public function test(CartService $cart): mixed
     {
+//        $cart->add(1,2);
+//        $cart->add(2,1);
 
-        $items = [
-            new ReservedProduct(1, 2, new Price(100), []),
-            new ReservedProduct(1, 2, new Price(5000), []),
-        ];
-
-
-        dd($service->calculateTotalQuantityPrice($items)->getCurrentPrice());
+        return $cart->all();
     }
 
 
