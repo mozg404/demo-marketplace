@@ -37,6 +37,6 @@ readonly class CartQuery
             $items[] = new CartItemDto($id, $quantity);
         }
 
-        return CartDto::from($items);
+        return CartDto::from(['items' => $items]);
     }
 }
