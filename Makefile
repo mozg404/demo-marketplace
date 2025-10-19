@@ -1,4 +1,4 @@
-init: sail-down-clear sail-update sail-up storage-link init-npm migrate-fresh scout-flush clear seed
+init: sail-down-clear sail-update sail-up storage-link init-npm migrate-fresh scout-flush reset seed
 up: sail-up
 down: sail-down
 restart: down up
@@ -90,8 +90,8 @@ storage-link:
 # --------------------------
 # Система очистки
 # --------------------------
-
-clear: clear-cache-laravel clear-cache-debugbar clear-cache-purifier clear-logs clear-media
+reset: clear clear-logs clear-media
+clear: clear-cache-laravel clear-cache-debugbar clear-cache-purifier
 
 clear-cache-laravel:
 	./vendor/bin/sail php artisan cache:clear
