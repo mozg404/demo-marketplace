@@ -2,39 +2,29 @@
 
 namespace App\Services\Balance;
 
+use App\Exceptions\Balance\InsufficientFundsException;
+use App\Exceptions\Balance\NegativeAmountException;
+use App\Exceptions\Balance\ZeroAmountException;
 use Throwable;
 use App\Contracts\Transactionable;
 use App\Enum\TransactionType;
-use App\Exceptions\Balance\InsufficientFundsException;
 use App\Models\Transaction;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 
 readonly class BalanceService
 {
-    public function __construct(
-        private BalanceChecker $balanceChecker,
-    )
-    {}
-
     /**
      * @throws Throwable
      */
     public function deposit(User $user, int $amount, TransactionType $type, ?Transactionable $transactionable = null): Transaction
     {
-        $this->balanceChecker->ensureNonNegativeAmount($amount);
-        $this->balanceChecker->ensureNonZeroAmount($amount);
+        $this->validateAmount($amount);
 
         return DB::transaction(function () use ($user, $amount, $type, $transactionable) {
             $user->increment('balance', $amount);
 
-            return $user->transactions()->create([
-                'amount' => $amount,
-                'type' => $type->value,
-                'transactionable_type' => $transactionable?->getTransactionableType(),
-                'transactionable_id' => $transactionable?->getTransactionableId(),
-                'created_at' => now()->toDateTimeString(),
-            ]);
+            return $this->createTransaction($user, $amount, $type, $transactionable);
         });
     }
 
@@ -43,37 +33,37 @@ readonly class BalanceService
      */
     public function withdraw(User $user, int $amount, TransactionType $type, ?Transactionable $transactionable = null): Transaction
     {
-        $this->balanceChecker->ensureNonNegativeAmount($amount);
-        $this->balanceChecker->ensureNonZeroAmount($amount);
+        $this->validateAmount($amount);
 
         return DB::transaction(function () use ($user, $amount, $type, $transactionable) {
+            if ($user->balance < $amount) {
+                throw new InsufficientFundsException();
+            }
+
             $user->decrement('balance', $amount);
 
-            return $user->transactions()->create([
-                'amount' => -$amount,
-                'type' => $type->value,
-                'transactionable_type' => $transactionable?->getTransactionableType(),
-                'transactionable_id' => $transactionable?->getTransactionableId(),
-                'created_at' => now()->toDateTimeString(),
-            ]);
+            return $this->createTransaction($user, -$amount, $type, $transactionable);
         });
     }
 
-    /**
-     * Выбрасывает исключение, если баланса недостаточно
-     */
-    public function ensureSufficientFunds(User $user, int $amount): void
+    private function createTransaction(User $user, int $amount, TransactionType $type, ?Transactionable $transactionable = null): Transaction
     {
-        if (!$this->hasSufficientFunds($user, $amount)) {
-            throw new InsufficientFundsException();
-        }
+        return $user->transactions()->create([
+            'amount' => $amount,
+            'type' => $type->value,
+            'transactionable_type' => $transactionable?->getTransactionableType(),
+            'transactionable_id' => $transactionable?->getTransactionableId(),
+            'created_at' => now()->toDateTimeString(),
+        ]);
     }
-    
+
     /**
-     * Проверка на достаточный баланс у пользователя
+     * @param int $amount
+     * @throws Throwable
      */
-    public function hasSufficientFunds(User $user, int $amount): bool
+    private function validateAmount(int $amount): void
     {
-        return $user->hasEnoughBalance($amount);
+        throw_if($amount < 0, new NegativeAmountException());
+        throw_if($amount === 0, new ZeroAmountException());
     }
 }
