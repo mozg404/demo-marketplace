@@ -12,12 +12,10 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table/index.js'
-import Input from "../../../components/ui/input/Input.vue";
 import TableBordered from "@/components/shared/table/TableBordered.vue";
 import DateTime from "@/components/shared/DateTime.vue";
 import PriceFormatter from "@/components/shared/PriceFormatter.vue";
 import ProductImage from "@/components/modules/products/ProductImage.vue";
-import MainLayout from "@/layouts/MainLayout.vue";
 import Wrapper from "@/components/shared/layout/Wrapper.vue";
 import {
   DropdownMenu,
@@ -26,8 +24,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu/index.js";
-import Main from "@/components/shared/layout/Main.vue";
-import PageTitle from "@/components/shared/layout/PageTitle.vue";
 import ProductStatus from "@/components/modules/products/ProductStatus.vue";
 import PageLayout from "@/layouts/PageLayout.vue";
 import SearchInput from "@/components/shared/form/SearchInput.vue";
@@ -36,7 +32,6 @@ import {
   SelectContent,
   SelectGroup,
   SelectItem,
-  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"

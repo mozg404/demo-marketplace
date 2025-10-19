@@ -3,14 +3,14 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Services\Auth\Authenticator;
+use App\Services\Auth\AuthService;
 use Illuminate\Http\RedirectResponse;
 
 class LogoutController extends Controller
 {
-    public function __invoke(Authenticator $authorizer): RedirectResponse
+    public function __invoke(AuthService $authService): RedirectResponse
     {
-        $authorizer->logout();
+        $authService->logout();
 
         return redirect()->route('home');
     }

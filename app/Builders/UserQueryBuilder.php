@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\Builders;
 
-use InvalidArgumentException;
-use App\Exceptions\Auth\UserNotFoundByEmailException;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -28,11 +26,6 @@ class UserQueryBuilder extends Builder
         return $this->whereHas('products', function (ProductQueryBuilder $builder) {
             return $builder->isAvailable();
         });
-    }
-
-    public function checkExistsByEmail(string $email): bool
-    {
-        return $this->where('email', $email)->exists();
     }
 
     public function withoutAdmin(): self

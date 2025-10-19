@@ -76,14 +76,15 @@ class StockItem extends Model
         return $this->status === StockItemStatus::RESERVED;
     }
 
+    public function markAsReserved(): void
+    {
+        $this->status = StockItemStatus::RESERVED;
+        $this->save();
+    }
+
     public function product(): BelongsTo|ProductQueryBuilder
     {
         return $this->belongsTo(Product::class);
-    }
-
-    public function orderItem(): BelongsTo|OrderItemQueryBuilder|null
-    {
-        return $this->belongsTo(OrderItem::class);
     }
 
     public function seller(): HasOneThrough|UserQueryBuilder

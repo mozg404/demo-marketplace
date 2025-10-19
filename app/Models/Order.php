@@ -29,7 +29,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property \Illuminate\Support\Carbon|null $paid_at
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read OrderItemCollection<int, \App\Models\OrderItem> $items
+ * @property-read OrderItemCollection<int, \App\Models\OrderItem>|array<OrderItem> $items
  * @property-read int|null $items_count
  * @property-read \App\Models\User $user
  * @method static OrderQueryBuilder<static>|Order descOrder()
@@ -68,6 +68,7 @@ class Order extends Model implements Transactionable, Sourceable, Seoble
         'user_id',
         'status',
         'amount',
+        'created_at',
     ];
 
     public function isPending(): bool

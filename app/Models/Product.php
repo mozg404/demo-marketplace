@@ -41,6 +41,8 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
  * @property int|null $category_id
  * @property int $positive_feedbacks_count
  * @property int $negative_feedbacks_count
+ * @property ?int $quantity
+ * @property ?array $reserved_stock_ids
  * @property float $rating
  * @property-read \App\Models\Category|null $category
  * @property-read \App\Models\ProductFeatureValue|null $pivot
@@ -120,6 +122,8 @@ class Product extends Model implements Seoble, HasMedia
         'status',
         'image',
         'category_id',
+        'description',
+        'instruction',
     ];
 
     protected function casts(): array
@@ -248,14 +252,14 @@ class Product extends Model implements Seoble, HasMedia
         ];
     }
 
-    public function toArray(): array
-    {
-        $array = parent::toArray();
-        $array['price'] = $this->price->toArray();
-        $array['preview'] = $this->preview;
-
-        return $array;
-    }
+//    public function toArray(): array
+//    {
+//        $array = parent::toArray();
+//        $array['price'] = $this->price->toArray();
+//        $array['preview'] = $this->preview;
+//
+//        return $array;
+//    }
 
     public function user(): BelongsTo
     {

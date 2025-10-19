@@ -2,20 +2,19 @@
 
 namespace App\Services\Demo;
 
-use App\Collections\CreatableOrderItemCollection;
 use App\Enum\TransactionType;
 use App\Models\Order;
+use App\Models\Product;
 use App\Models\User;
 use App\Services\Balance\BalanceService;
 use App\Services\Order\OrderCreator;
 use App\Services\Order\OrderProcessor;
-use App\Services\Product\ProductQuery;
+use App\Services\Product\DTO\PurchasableItem;
 use Illuminate\Support\Carbon;
 
 readonly class DemoOrderCreator
 {
     public function __construct(
-        private ProductQuery $productQuery,
         private OrderCreator $orderCreator,
         private OrderProcessor $orderProcessor,
         private BalanceService $balanceService,
@@ -24,17 +23,18 @@ readonly class DemoOrderCreator
 
     public function create(User $user): Order
     {
-        $products = $this->productQuery->query()
+        $purchasableProducts = Product::query()
             ->isAvailable()
             ->whereNotBelongsToUser($user)
             ->take(random_int(config('demo.min_order_random_items'), config('demo.max_order_random_items')))
-            ->get();
+            ->get()
+            ->map(fn(Product $product) => new PurchasableItem($product->id, 1));
 
-        return $this->orderCreator->create(
-            user: $user,
-            items: CreatableOrderItemCollection::fromProductCollection($products),
-            createdAt: new Carbon(fake()->dateTimeBetween('-1 year'))
-        );
+        $order = $this->orderCreator->create($user->id, $purchasableProducts);
+        $order->update(['created_at' => new Carbon(fake()->dateTimeBetween('-1 year'))]);
+
+        return $order;
+
     }
 
     public function complete(Order $order): void

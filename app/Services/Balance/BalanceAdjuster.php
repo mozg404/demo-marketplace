@@ -20,6 +20,10 @@ readonly class BalanceAdjuster
      */
     public function setBalance(User $user, int $targetBalance): Transaction
     {
+        if ($targetBalance < 0) {
+            throw new InvalidArgumentException('Баланс не может быть отрицательным');
+        }
+
         $difference = $targetBalance - $user->balance;
 
         if ($difference === 0) {

@@ -2,11 +2,10 @@
 
 namespace App\Http\Controllers\My\Product;
 
+use App\DTO\Product\ProductUpdateDescriptionDto;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\MyProduct\ProductChangeDescriptionRequest;
 use App\Models\Product;
-use App\Services\Product\ProductService;
-use App\Services\Product\ProductUpdater;
+use App\Services\Product\ProductManager;
 use App\Services\Toaster;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
@@ -23,11 +22,11 @@ class ProductChangeDescriptionController extends Controller
 
     public function update(
         Product $product,
-        ProductChangeDescriptionRequest $request,
-        ProductUpdater $updater,
+        ProductUpdateDescriptionDto $dto,
+        ProductManager $manager,
         Toaster $toaster
     ): RedirectResponse {
-        $updater->updateDescription($product, $request->input('description'));
+        $manager->updateDescription($product, $dto);
         $toaster->success('Описание изменено');
 
         return back();

@@ -10,6 +10,7 @@ use App\Http\Controllers\CartController;
 use App\Http\Controllers\CatalogController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\IndexController;
+use App\Http\Controllers\My\Product\ProductChangeBaseController;
 use App\Http\Controllers\My\Settings\ChangeAvatarController;
 use App\Http\Controllers\My\Settings\PasswordChangeController;
 use App\Http\Controllers\My\MyBalanceController;
@@ -64,17 +65,11 @@ Route::middleware('auth')->prefix('/my')->group(function () {
             Route::get('/edit', [ProductEditController::class, 'index'])->name('my.products.edit');
 
             Route::prefix('/change')->group(function () {
-                Route::get('/name', [ProductChangeNameController::class, 'index'])->name('my.products.change.name');
-                Route::patch('/name', [ProductChangeNameController::class, 'update'])->name('my.products.change.name.update');
+                Route::get('/base', [ProductChangeBaseController::class, 'index'])->name('my.products.change.base');
+                Route::patch('/base', [ProductChangeBaseController::class, 'update'])->name('my.products.change.base.update');
 
                 Route::get('/image', [ProductChangeImageController::class, 'index'])->name('my.products.change.image');
                 Route::patch('/image', [ProductChangeImageController::class, 'update'])->name('my.products.change.image.update');
-
-                Route::get('/category', [ProductChangeCategoryController::class, 'index'])->name('my.products.change.category');
-                Route::patch('/category', [ProductChangeCategoryController::class, 'update'])->name('my.products.change.category.update');
-
-                Route::get('/price', [ProductChangePriceController::class, 'index'])->name('my.products.change.price');
-                Route::patch('/price', [ProductChangePriceController::class, 'update'])->name('my.products.change.price.update');
 
                 Route::get('/features', [ProductChangeFeaturesController::class, 'index'])->name('my.products.change.features');
                 Route::patch('/features', [ProductChangeFeaturesController::class, 'update'])->name('my.products.change.features.update');

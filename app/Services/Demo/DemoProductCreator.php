@@ -3,15 +3,15 @@
 namespace App\Services\Demo;
 
 use App\Data\Demo\DemoProductData;
+use App\DTO\Product\ProductAttachPreviewDto;
+use App\DTO\Product\ProductAttachFeaturesDto;
+use App\DTO\Product\StockCreateDto;
 use App\Enum\FeatureType;
 use App\Enum\ProductStatus;
 use App\Models\Product;
 use App\Models\User;
-use App\Services\Category\CategoryQuery;
-use App\Services\Product\ProductCreator;
-use App\Services\Product\ProductFeatureAttacher;
-use App\Services\Product\ProductPreviewAttacher;
-use App\Services\Product\Stock\StockCreator;
+use App\Services\Category\CategoryRepository;
+use App\Services\Product\ProductManager;
 use App\Support\TextGenerator;
 use App\ValueObjects\Price;
 use Carbon\Carbon;
@@ -19,11 +19,8 @@ use Carbon\Carbon;
 readonly class DemoProductCreator
 {
     public function __construct(
-        private CategoryQuery $categoryQuery,
-        private ProductCreator $creator,
-        private ProductPreviewAttacher $previewAttacher,
-        private ProductFeatureAttacher $featureAttacher,
-        private StockCreator $stockCreator,
+        private CategoryRepository $categoryQuery,
+        private ProductManager $productManager,
     ) {
     }
 
@@ -32,9 +29,9 @@ readonly class DemoProductCreator
         $category = $this->categoryQuery->getByFullPath($data->categoryFullPath);
 
         // Создание товара
-        $product = $this->creator->create(
-            user: $user,
-            category: $category,
+        $product = $this->productManager->createProduct(
+            userId: $user->id,
+            categoryId: $category->id,
             name: $data->name,
             price: Price::random(),
             status: ProductStatus::ACTIVE,
@@ -44,7 +41,7 @@ readonly class DemoProductCreator
         );
 
         // Превью
-        $this->previewAttacher->attachPreviewFromPath($product, $data->imagePath);
+        $this->productManager->attachPreviewFromPath($product, $data->imagePath);
 
         // Динамические характеристики (Пока что захардкодим)
         $attachments = [];
@@ -59,13 +56,12 @@ readonly class DemoProductCreator
             };
         }
 
-        $this->featureAttacher->attachAllFromArray($product, $attachments);
+        $this->productManager->attachFeatures($product, ProductAttachFeaturesDto::from($attachments));
 
-        // Позиции на складе
         for ($i = 0; $i < config('demo.product_stock_count'); ++$i) {
-            $this->stockCreator->create(
-                product: $product,
-                content: fake()->regexify('[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}')
+            $this->productManager->createStockItem(
+                $product,
+                new StockCreateDto(fake()->regexify('[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}'))
             );
         }
 

@@ -18,7 +18,7 @@ class ProductIndexController extends Controller
         $products = $productQuery->query()
             ->whereSeller(Auth::id())
             ->withStockItemsCount()
-            ->withAvailableStockItemsCount()
+            ->withAvailableCount()
             ->filterFromArray($request->getFiltersValues())
             ->paginate(10)
             ->appends($request->getFiltersValues());

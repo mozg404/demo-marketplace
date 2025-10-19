@@ -2,14 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Jobs\CreateRandomUser;
-use App\Jobs\CreateSpecificProduct;
+use App\Contracts\Cart;
 use App\Models\Category;
-use App\Models\User;
-use App\Services\Demo\DemoProductList;
-use App\Services\User\UserAvatarChanger;
-use App\Services\User\UserRegistrar;
-use Illuminate\Http\Request;
+use App\Services\Cart\CartService;
 use Inertia\Inertia;
 
 class TestController extends Controller
@@ -18,21 +13,12 @@ class TestController extends Controller
     public function __construct()
     {}
 
-    public function test(
-        DemoProductList $productList,
-    ): mixed
+    public function test(CartService $cart): mixed
     {
+//        $cart->add(1,2);
+//        $cart->add(2,1);
 
-        $raw = $productList->raw()[3];
-
-        CreateSpecificProduct::dispatch($productList->toData($raw));
-//        CreateSpecificDemoProduct::dispatch($raw);
-
-//        CreateSpecificDemoProduct::dispatch([1,2,3]);
-//        CreateSpecificDemoProduct::dispatch();
-
-
-        return  123;
+        return $cart->all();
     }
 
 
