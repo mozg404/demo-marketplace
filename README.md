@@ -1,6 +1,6 @@
 # Demo Marketplace
 
-**Backend:** Laravel 12, PostgreSQL, Meilisearch, Mailpit    
+**Backend:** PHP8.4, Laravel 12, PostgreSQL, Redis, Meilisearch, Mailpit    
 **Frontend:** Vue 3, Inertia.js 2, Tailwind CSS 4, ShadCN/Vue, JavaScript ES6+    
 **Инфраструктура:** Docker, Laravel Sail, Makefile
 
