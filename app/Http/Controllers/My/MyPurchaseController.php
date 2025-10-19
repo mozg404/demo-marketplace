@@ -26,6 +26,7 @@ class MyPurchaseController extends Controller
             ->whereBuyer(auth()->user())
             ->paginate(10);
 
+
         return Inertia::render('my/purchases/PurchasedIndexPage', [
             'purchasedItems' => PurchasedItemForListingData::collect($purchasedItems),
             'seo' => new SeoBuilder('Мои покупки'),

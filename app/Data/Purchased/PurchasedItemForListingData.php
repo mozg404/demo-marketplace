@@ -3,6 +3,7 @@
 namespace App\Data\Purchased;
 
 use App\Data\Categories\CategorydData;
+use App\Data\Products\ProductPreviewData;
 use App\Data\User\UserData;
 use App\Enum\ProductStatus;
 use App\Models\Feedback;
@@ -21,7 +22,7 @@ class PurchasedItemForListingData extends Data
         public int $product_id,
         public string $name,
         public Price $price,
-        public ?string $image_url,
+        public ?ProductPreviewData $preview,
         public ?CategorydData $category,
         public ProductStatus $status,
         public ?UserData $seller = null,
@@ -40,7 +41,7 @@ class PurchasedItemForListingData extends Data
             product_id: $orderItem->product_id,
             name: $orderItem->product->name,
             price: $orderItem->price,
-            image_url: $orderItem->product->image_url,
+            preview: ProductPreviewData::from($orderItem->product?->preview),
             category: CategorydData::from($orderItem->product->category),
             status: $orderItem->product->status,
             seller: UserData::from($orderItem->seller),
