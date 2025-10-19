@@ -2,13 +2,13 @@
 
 namespace Tests\Feature\Services\Product;
 
+use App\DTO\Product\PurchasableItemDto;
 use App\Enum\ProductStatus;
 use App\Enum\StockItemStatus;
 use App\Exceptions\Product\ProductUnavailableException;
 use App\Models\Product;
 use App\Models\StockItem;
 use App\Models\User;
-use App\Services\Product\DTO\PurchasableItem;
 use App\Services\Product\ProductSaleManager;
 use App\ValueObjects\Price;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -47,8 +47,8 @@ class ProductSaleManagerTest extends TestCase
         StockItem::factory()->count(3)->create(['product_id' => $product2->id]);
 
         $items = [
-            new PurchasableItem($product1->id, 2),
-            new PurchasableItem($product2->id, 1),
+            new PurchasableItemDto($product1->id, 2),
+            new PurchasableItemDto($product2->id, 1),
         ];
 
         $this->expectNotToPerformAssertions();
@@ -65,7 +65,7 @@ class ProductSaleManagerTest extends TestCase
 
         StockItem::factory()->count(3)->create(['product_id' => $product->id]);
 
-        $items = [new PurchasableItem($product->id, 1)];
+        $items = [new PurchasableItemDto($product->id, 1)];
 
         $this->expectException(ProductUnavailableException::class);
         $this->productSaleManager->validatePurchasableItems($items);
@@ -81,7 +81,7 @@ class ProductSaleManagerTest extends TestCase
 
         StockItem::factory()->count(2)->create(['product_id' => $product->id]);
 
-        $items = [new PurchasableItem($product->id, 5)]; // Запрашиваем больше чем есть
+        $items = [new PurchasableItemDto($product->id, 5)]; // Запрашиваем больше чем есть
 
         $this->expectException(ProductUnavailableException::class);
         $this->productSaleManager->validatePurchasableItems($items);
@@ -90,7 +90,7 @@ class ProductSaleManagerTest extends TestCase
     #[Test]
     public function validatePurchasableItemsThrowsExceptionForNonExistentProduct(): void
     {
-        $items = [new PurchasableItem(999, 1)]; // Несуществующий ID
+        $items = [new PurchasableItemDto(999, 1)]; // Несуществующий ID
 
         $this->expectException(ProductUnavailableException::class);
         $this->productSaleManager->validatePurchasableItems($items);
@@ -106,7 +106,7 @@ class ProductSaleManagerTest extends TestCase
 
         StockItem::factory()->count(3)->create(['product_id' => $product->id]);
 
-        $items = collect([new PurchasableItem($product->id, 2)]);
+        $items = collect([new PurchasableItemDto($product->id, 2)]);
 
         $this->expectNotToPerformAssertions();
         $this->productSaleManager->validatePurchasableItems($items);
@@ -136,8 +136,8 @@ class ProductSaleManagerTest extends TestCase
         ]);
 
         $items = [
-            new PurchasableItem($product1->id, 2),
-            new PurchasableItem($product2->id, 1),
+            new PurchasableItemDto($product1->id, 2),
+            new PurchasableItemDto($product2->id, 1),
         ];
 
         $reservedProducts = $this->productSaleManager->reservePurchasableItems($items);
@@ -178,7 +178,7 @@ class ProductSaleManagerTest extends TestCase
             'status' => StockItemStatus::AVAILABLE,
         ]);
 
-        $items = collect([new PurchasableItem($product->id, 1)]);
+        $items = collect([new PurchasableItemDto($product->id, 1)]);
 
         $reservedProducts = $this->productSaleManager->reservePurchasableItems($items);
 

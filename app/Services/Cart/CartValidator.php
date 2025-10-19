@@ -2,8 +2,8 @@
 
 namespace App\Services\Cart;
 
+use App\DTO\Product\PurchasableItemDto;
 use App\Models\Product;
-use App\Services\Product\DTO\PurchasableItem;
 use App\Services\Product\ProductSaleManager;
 
 readonly class CartValidator
@@ -17,7 +17,7 @@ readonly class CartValidator
     public function validateAdd(Product $product, int $quantity = 1): void
     {
         $this->saleManager->validatePurchasableItems([
-            new PurchasableItem($product->id, $quantity + $this->cartQuery->getQuantityFor($product))
+            new PurchasableItemDto($product->id, $quantity + $this->cartQuery->getQuantityFor($product))
         ]);
     }
 }

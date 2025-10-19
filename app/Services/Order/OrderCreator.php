@@ -2,10 +2,10 @@
 
 namespace App\Services\Order;
 
+use App\DTO\Product\PurchasableItemDto;
 use App\Enum\OrderStatus;
 use App\Models\Order;
 use App\Services\Price\PriceService;
-use App\Services\Product\DTO\PurchasableItem;
 use App\Services\Product\ProductSaleManager;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -21,7 +21,7 @@ readonly class OrderCreator
 
     /**
      * @param int $userId
-     * @param array<PurchasableItem>|Collection<PurchasableItem> $items
+     * @param array<PurchasableItemDto>|Collection<PurchasableItemDto> $items
      * @return Order
      * @throws Throwable
      */
@@ -52,7 +52,7 @@ readonly class OrderCreator
         });
     }
 
-    public function createExpress(int $userId, PurchasableItem $item): Order
+    public function createExpress(int $userId, PurchasableItemDto $item): Order
     {
         return $this->create($userId, [$item]);
     }
