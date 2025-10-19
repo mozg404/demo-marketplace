@@ -23,6 +23,15 @@ readonly class ProductQuery
         return Product::query();
     }
 
+    public function search(string $request): ProductCollection
+    {
+        return $this->query()
+            ->forListingPreset()
+            ->searchAndSort($request)
+            ->take(20)
+            ->get();
+    }
+
     public function getLatestDiscountedProducts(): ProductCollection
     {
         return Cache::tags([self::CACHE_TAG, 'latest_discounted'])->remember("products:latest:discounted", 3600, function () {
