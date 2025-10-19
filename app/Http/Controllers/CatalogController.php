@@ -9,7 +9,7 @@ use App\Http\Requests\Catalog\CatalogCategoryFilterableRequest;
 use App\Http\Requests\Catalog\CatalogFilterableRequest;
 use App\Models\Category;
 use App\Models\Product;
-use App\Services\Category\CategoryRepository;
+use App\Services\Category\CategoryQuery;
 use App\Services\Feature\FeatureQuery;
 use App\Services\Product\ProductQuery;
 use App\Support\SeoBuilder;
@@ -20,7 +20,7 @@ class CatalogController extends Controller
 {
     public function index(
         CatalogFilterableRequest $request,
-        CategoryRepository $categoryQuery,
+        CategoryQuery $categoryQuery,
         ProductQuery $productQuery,
     ): Response {
         $categories = $categoryQuery->query()->get()->toTree();
@@ -41,7 +41,7 @@ class CatalogController extends Controller
     public function category(
         Category $category,
         CatalogCategoryFilterableRequest $request,
-        CategoryRepository $categoryQuery,
+        CategoryQuery $categoryQuery,
         ProductQuery $productQuery,
         FeatureQuery $featureQuery,
     ): Response {

@@ -317,6 +317,15 @@ class ProductQueryBuilder extends Builder
     }
 
     // -----------------------------------------------
+    // Select
+    // -----------------------------------------------
+
+    public function selectForListing(): self
+    {
+        return $this->select(['id', 'user_id', 'category_id', 'name', 'status', 'current_price', 'base_price', 'rating', 'created_at']);
+    }
+
+    // -----------------------------------------------
     // Presets
     // -----------------------------------------------
 
@@ -326,6 +335,7 @@ class ProductQueryBuilder extends Builder
     public function forListingPreset(): self
     {
         return $this
+            ->selectForListing()
             ->isActive()
             ->withMedia()
             ->hasAvailableStock()

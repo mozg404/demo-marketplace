@@ -10,7 +10,7 @@ use App\Enum\FeatureType;
 use App\Enum\ProductStatus;
 use App\Models\Product;
 use App\Models\User;
-use App\Services\Category\CategoryRepository;
+use App\Services\Category\CategoryQuery;
 use App\Services\Product\ProductManager;
 use App\Support\TextGenerator;
 use App\ValueObjects\Price;
@@ -19,7 +19,7 @@ use Carbon\Carbon;
 readonly class DemoProductCreator
 {
     public function __construct(
-        private CategoryRepository $categoryQuery,
+        private CategoryQuery $categoryQuery,
         private ProductManager $productManager,
     ) {
     }
