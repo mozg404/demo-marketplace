@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Services\Order;
 
+use App\DTO\Product\PurchasableItemDto;
 use App\Enum\OrderStatus;
 use App\Enum\ProductStatus;
 use App\Enum\StockItemStatus;
@@ -11,7 +12,6 @@ use App\Models\Product;
 use App\Models\StockItem;
 use App\Models\User;
 use App\Services\Order\OrderCreator;
-use App\Services\Product\DTO\PurchasableItem;
 use App\ValueObjects\Price;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;
@@ -50,8 +50,8 @@ class OrderCreatorTest extends TestCase
         StockItem::factory()->count(2)->create(['product_id' => $product2->id]);
 
         $items = [
-            new PurchasableItem($product1->id, 2),
-            new PurchasableItem($product2->id, 1),
+            new PurchasableItemDto($product1->id, 2),
+            new PurchasableItemDto($product2->id, 1),
         ];
 
         $order = $this->orderCreator->create($this->user->id, $items);
@@ -98,7 +98,7 @@ class OrderCreatorTest extends TestCase
 
         StockItem::factory()->count(2)->create(['product_id' => $product->id]);
 
-        $items = collect([new PurchasableItem($product->id, 1)]);
+        $items = collect([new PurchasableItemDto($product->id, 1)]);
 
         $order = $this->orderCreator->create($this->user->id, $items);
 
@@ -119,7 +119,7 @@ class OrderCreatorTest extends TestCase
 
         StockItem::factory()->count(1)->create(['product_id' => $product->id]);
 
-        $item = new PurchasableItem($product->id, 1);
+        $item = new PurchasableItemDto($product->id, 1);
 
         $order = $this->orderCreator->createExpress($this->user->id, $item);
 
@@ -140,7 +140,7 @@ class OrderCreatorTest extends TestCase
 
         StockItem::factory()->count(1)->create(['product_id' => $product->id]);
 
-        $items = [new PurchasableItem($product->id, 1)];
+        $items = [new PurchasableItemDto($product->id, 1)];
 
         $this->expectException(ProductUnavailableException::class);
         $this->orderCreator->create($this->user->id, $items);
@@ -156,7 +156,7 @@ class OrderCreatorTest extends TestCase
 
         StockItem::factory()->count(1)->create(['product_id' => $product->id]);
 
-        $items = [new PurchasableItem($product->id, 2)]; // Запрашиваем больше чем есть
+        $items = [new PurchasableItemDto($product->id, 2)]; // Запрашиваем больше чем есть
 
         $this->expectException(ProductUnavailableException::class);
         $this->orderCreator->create($this->user->id, $items);
@@ -174,7 +174,7 @@ class OrderCreatorTest extends TestCase
 
         // Симулируем ситуацию, где создание order items может упасть
         // Для этого создаем невалидные данные (несуществующий product_id)
-        $items = [new PurchasableItem(999, 1)]; // Несуществующий продукт
+        $items = [new PurchasableItemDto(999, 1)]; // Несуществующий продукт
 
         try {
             $this->orderCreator->create($this->user->id, $items);
@@ -198,7 +198,7 @@ class OrderCreatorTest extends TestCase
 
         StockItem::factory()->count(5)->create(['product_id' => $product->id]);
 
-        $items = [new PurchasableItem($product->id, 3)];
+        $items = [new PurchasableItemDto($product->id, 3)];
 
         $order = $this->orderCreator->create($this->user->id, $items);
 
@@ -225,8 +225,8 @@ class OrderCreatorTest extends TestCase
         StockItem::factory()->count(1)->create(['product_id' => $product2->id]);
 
         $items = [
-            new PurchasableItem($product1->id, 2), // 1600
-            new PurchasableItem($product2->id, 1), // 500
+            new PurchasableItemDto($product1->id, 2), // 1600
+            new PurchasableItemDto($product2->id, 1), // 500
         ];
 
         $order = $this->orderCreator->create($this->user->id, $items);

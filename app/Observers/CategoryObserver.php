@@ -3,15 +3,17 @@
 namespace App\Observers;
 
 use App\Models\Category;
+use App\Services\Category\CategoryQuery;
 use App\Services\Category\CategoryService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Throwable;
 
-class CategoryObserver
+readonly class CategoryObserver
 {
     public function __construct(
         private CategoryService $categoryService,
+        private CategoryQuery $categoryQuery,
     ) {
     }
 
@@ -35,6 +37,7 @@ class CategoryObserver
     public function created(Category $category): void
     {
         $category->saveQuietly();
+        $this->categoryQuery->clearCache();
     }
 
     /**
@@ -78,6 +81,13 @@ class CategoryObserver
                 $category->saveQuietly();
             });
         }
+
+        $this->categoryQuery->clearCache();
+    }
+
+    public function deleted(Category $category): void
+    {
+        $this->categoryQuery->clearCache();
     }
 
     protected function generateFullPath(Category $category): void
@@ -104,10 +114,9 @@ class CategoryObserver
                     $newFullPath,
                     $descendant->full_path
                 );
-
                 $this->categoryService->ensureUniqueFullPath($descendant);
-
                 $descendant->saveQuietly();
             });
     }
+
 }

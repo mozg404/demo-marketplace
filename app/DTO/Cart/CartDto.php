@@ -2,7 +2,7 @@
 
 namespace App\DTO\Cart;
 
-use App\Services\Product\DTO\PurchasableItem;
+use App\DTO\Product\PurchasableItemDto;
 use Illuminate\Support\Collection;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
@@ -18,6 +18,6 @@ class CartDto extends Data
 
     public function toPurchasableItems(): Collection
     {
-        return $this->items->toCollection()->map(fn(CartItemDto $dto) => new PurchasableItem($dto->id, $dto->quantity));
+        return $this->items->toCollection()->map(fn(CartItemDto $dto) => new PurchasableItemDto($dto->id, $dto->quantity));
     }
 }

@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Services\Product\DTO;
+namespace App\DTO\Product;
 
 use Spatie\LaravelData\Data;
 
-class PurchasableItem extends Data
+class PurchasableItemDto extends Data
 {
     public function __construct(
         public readonly int $productId,

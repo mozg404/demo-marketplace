@@ -3,17 +3,17 @@
 namespace App\Services\Product;
 
 use App\Collections\ProductCollection;
+use App\DTO\Product\PurchasableItemDto;
+use App\DTO\Product\ReservedProductDto;
 use App\Enum\StockItemStatus;
 use App\Exceptions\Product\ProductUnavailableException;
 use App\Models\Product;
 use App\Models\StockItem;
-use App\Services\Product\DTO\PurchasableItem;
-use App\Services\Product\DTO\ReservedProduct;
 use Illuminate\Support\Collection;
 
 class ProductSaleManager
 {
-    /** @param array<PurchasableItem>|Collection<PurchasableItem> $items */
+    /** @param array<PurchasableItemDto>|Collection<PurchasableItemDto> $items */
     public function validatePurchasableItems(array|Collection $items): void
     {
         $ids = collect($items)->pluck('productId')->toArray();
@@ -35,8 +35,8 @@ class ProductSaleManager
     }
 
     /**
-     * @param array<PurchasableItem>|Collection<PurchasableItem> $items
-     * @return Collection<ReservedProduct>
+     * @param array<PurchasableItemDto>|Collection<PurchasableItemDto> $items
+     * @return Collection<ReservedProductDto>
      */
     public function reservePurchasableItems(array|Collection $items): Collection
     {
@@ -49,10 +49,10 @@ class ProductSaleManager
             ->whereIds($items->pluck('productId')->toArray())
             ->get()
             ->map(function (Product $product) use ($items) {
-                /** @param PurchasableItem $purchasable */
+                /** @param PurchasableItemDto $purchasable */
                 $purchasable = $items->where('productId', $product->id)->first();
 
-                return new ReservedProduct(
+                return new ReservedProductDto(
                     $product->id,
                     $purchasable->quantity,
                     $product->price,

@@ -20,10 +20,6 @@ class SearchController extends Controller
 
     public function store(SearchStoreRequest $request, ProductQuery $productQuery): Collection
     {
-        return $productQuery->query()
-            ->forListingPreset()
-            ->searchAndSort($request->input('search'))
-            ->take(20)
-            ->get();
+        return $productQuery->search($request->input('search'));
     }
 }

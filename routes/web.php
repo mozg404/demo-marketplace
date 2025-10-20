@@ -18,32 +18,22 @@ use App\Http\Controllers\My\MyOrderController;
 use App\Http\Controllers\My\MyPurchaseController;
 use App\Http\Controllers\My\MySaleController;
 use App\Http\Controllers\My\Order\OrderItemFeedbackController;
-use App\Http\Controllers\My\Product\ProductChangeCategoryController;
 use App\Http\Controllers\My\Product\ProductChangeDescriptionController;
 use App\Http\Controllers\My\Product\ProductChangeFeaturesController;
 use App\Http\Controllers\My\Product\ProductChangeImageController;
 use App\Http\Controllers\My\Product\ProductChangeInstructionController;
-use App\Http\Controllers\My\Product\ProductChangeNameController;
-use App\Http\Controllers\My\Product\ProductChangePriceController;
 use App\Http\Controllers\My\Product\ProductCreateController;
 use App\Http\Controllers\My\Product\ProductEditController;
 use App\Http\Controllers\My\Product\ProductIndexController as CabinetProductController;
 use App\Http\Controllers\My\Product\StockController;
 use App\Http\Controllers\My\Settings\ProfileUpdateController;
-use App\Http\Controllers\My\SettingsController;
 use App\Http\Controllers\PaymentCallbackController;
 use App\Http\Controllers\SandboxController;
 use App\Http\Controllers\SearchController;
-use App\Http\Controllers\TestController;
 use App\Http\Controllers\UserController;
 use App\Http\Middleware\CheckoutAccess;
 use App\Http\Middleware\CheckoutExpressAccess;
 use Illuminate\Support\Facades\Route;
-
-if (config('app.env') === 'local') {
-    Route::get('/test', [TestController::class, 'test']);
-    Route::get('/test-page', [TestController::class, 'testPage']);
-}
 
 // ---------------------------------------------
 // My

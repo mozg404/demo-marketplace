@@ -2,10 +2,9 @@
 
 namespace App\Http\Controllers\My\Product;
 
-use App\DTO\Product\ProductBaseCreateDto;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\MyProduct\ProductCreateRequest;
-use App\Models\Category;
+use App\Services\Category\CategoryQuery;
 use App\Services\Product\ProductManager;
 use App\Services\Toaster;
 use Illuminate\Http\RedirectResponse;
@@ -14,10 +13,10 @@ use Inertia\Response;
 
 class ProductCreateController extends Controller
 {
-    public function index(): Response
+    public function index(CategoryQuery $categoryQuery): Response
     {
         return Inertia::render('my/products/ProductCreateModal', [
-            'categoriesTree' => Category::query()->withDepth()->get()->toTree(),
+            'categoriesTree' => $categoryQuery->getTree(),
         ]);
     }
 

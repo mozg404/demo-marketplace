@@ -2,6 +2,7 @@
 
 namespace App\Services\Demo;
 
+use App\DTO\Product\PurchasableItemDto;
 use App\Enum\TransactionType;
 use App\Models\Order;
 use App\Models\Product;
@@ -9,7 +10,6 @@ use App\Models\User;
 use App\Services\Balance\BalanceService;
 use App\Services\Order\OrderCreator;
 use App\Services\Order\OrderProcessor;
-use App\Services\Product\DTO\PurchasableItem;
 use Illuminate\Support\Carbon;
 
 readonly class DemoOrderCreator
@@ -28,7 +28,7 @@ readonly class DemoOrderCreator
             ->whereNotBelongsToUser($user)
             ->take(random_int(config('demo.min_order_random_items'), config('demo.max_order_random_items')))
             ->get()
-            ->map(fn(Product $product) => new PurchasableItem($product->id, 1));
+            ->map(fn(Product $product) => new PurchasableItemDto($product->id, 1));
 
         $order = $this->orderCreator->create($user->id, $purchasableProducts);
         $order->update(['created_at' => new Carbon(fake()->dateTimeBetween('-1 year'))]);

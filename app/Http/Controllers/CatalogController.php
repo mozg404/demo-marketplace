@@ -9,7 +9,7 @@ use App\Http\Requests\Catalog\CatalogCategoryFilterableRequest;
 use App\Http\Requests\Catalog\CatalogFilterableRequest;
 use App\Models\Category;
 use App\Models\Product;
-use App\Services\Category\CategoryRepository;
+use App\Services\Category\CategoryQuery;
 use App\Services\Feature\FeatureQuery;
 use App\Services\Product\ProductQuery;
 use App\Support\SeoBuilder;
@@ -20,10 +20,9 @@ class CatalogController extends Controller
 {
     public function index(
         CatalogFilterableRequest $request,
-        CategoryRepository $categoryQuery,
+        CategoryQuery $categoryQuery,
         ProductQuery $productQuery,
     ): Response {
-        $categories = $categoryQuery->query()->get()->toTree();
         $products = $productQuery->query()
             ->forListingPreset()
             ->filterFromArray($request->getValues())
@@ -32,7 +31,7 @@ class CatalogController extends Controller
 
         return Inertia::render('catalog/CatalogPage', [
             'filtersValues' => $request->getValues(),
-            'categories' => $categories,
+            'categories' => $categoryQuery->getTree(),
             'products' => ProductForListingData::collect($products),
             'seo' => new SeoBuilder('Каталог товаров'),
         ]);
@@ -41,12 +40,10 @@ class CatalogController extends Controller
     public function category(
         Category $category,
         CatalogCategoryFilterableRequest $request,
-        CategoryRepository $categoryQuery,
+        CategoryQuery $categoryQuery,
         ProductQuery $productQuery,
         FeatureQuery $featureQuery,
     ): Response {
-        $categories = $categoryQuery->query()->get()->toTree();
-        $features = $featureQuery->query()->forCategoryAndAncestors($category)->get();
         $products = $productQuery->query()
             ->forListingPreset()
             ->whereCategoryAndDescendants($category)
@@ -56,9 +53,9 @@ class CatalogController extends Controller
 
         return Inertia::render('catalog/CatalogCategoryPage', [
             'category' => $category,
-            'features' => $features,
+            'features' => $featureQuery->getFeaturesByCategory($category->id),
             'filtersValues' => $request->getValues(),
-            'categories' => $categories,
+            'categories' => $categoryQuery->getTree(),
             'products' => ProductForListingData::collect($products),
             'seo' => new SeoBuilder($category),
         ]);

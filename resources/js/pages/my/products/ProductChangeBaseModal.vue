@@ -10,12 +10,15 @@ import {Input} from "@/components/ui/input/index.js";
 import {showToastsFromFormData} from "@/composables/useToasts.js";
 import {NumberField, NumberFieldContent, NumberFieldInput} from "@components/ui/number-field/index.js";
 import CategorySelect from "@components/modules/products/CategorySelect.vue";
+import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@components/ui/select/index.js";
 
 const props = defineProps({
   product: Object,
+  statuses: Object,
   categoriesTree: Array,
 })
 const form = useForm({
+  status: props.product.status,
   category_id: props.product.category_id,
   name: props.product.name,
   price_base: props.product.price.base,
@@ -33,11 +36,33 @@ const submit = () => form.post(route('my.products.change.base.update', props.pro
 </script>
 
 <template>
+
+
+
   <Modal max-width="2xl" ref="modalRef">
     <div class="text-2xl font-semibold mb-8">Редактирование основной информации</div>
 
     <form @submit.prevent="submit" class="flex flex-col gap-6">
       <div class="grid gap-6">
+
+        <div class="grid gap-3">
+          <Label for="category_id">Статус</Label>
+          <Select v-model="form.status">
+            <SelectTrigger class="w-full">
+              <SelectValue placeholder="Выберите..." />
+            </SelectTrigger>
+            <SelectContent
+              position="popper"
+              :teleport="true"
+              positionStrategy="fixed"
+              class="z-[1000] w-full"
+            >
+              <SelectItem :value="null">Выбрать</SelectItem>
+              <SelectItem v-for="(option,key,index) in statuses" :key="key" :value="key">{{ option }}</SelectItem>
+            </SelectContent>
+          </Select>
+          <ErrorMessage :message="form.errors.status"/>
+        </div>
 
         <div class="grid gap-3">
           <Label for="category_id">Категория</Label>

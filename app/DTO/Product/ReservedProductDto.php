@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Services\Product\DTO;
+namespace App\DTO\Product;
 
 use App\Contracts\HasQuantityPrice;
 use App\ValueObjects\Price;
 use Spatie\LaravelData\Data;
 
-class ReservedProduct extends Data implements HasQuantityPrice
+class ReservedProductDto extends Data implements HasQuantityPrice
 {
     public function __construct(
         public int $productId,
