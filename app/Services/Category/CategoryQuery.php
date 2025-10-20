@@ -31,7 +31,7 @@ class CategoryQuery
 
     public function getTree(): NestedCollection
     {
-        return Cache::tags(['categories', 'tree'])->remember("categories:tree", TimeToLive::ThreeDays->value, static function () {
+        return Cache::tags([self::CACHE_TAG, 'tree'])->remember("categories:tree", TimeToLive::ThreeDays->value, static function () {
             return Category::query()->withDepth()->get()->toTree();
         });
     }
@@ -41,14 +41,9 @@ class CategoryQuery
         return $this->getPathIdsMap()[$path] ?? null;
     }
 
-    public function getDescendantsAndSelfIdsFor(int $categoryId): array
-    {
-        return $this->getDescendantsIdsMap()[$categoryId] ?? [$categoryId];
-    }
-
     public function getPathIdsMap(): array
     {
-        return Cache::tags(['categories', 'map'])->remember("categories:path_to_id_map", TimeToLive::ThreeDays->value, static function () {
+        return Cache::tags([self::CACHE_TAG, 'map'])->remember("categories:path_to_id_map", TimeToLive::ThreeDays->value, static function () {
             return Category::query()->select('id', 'full_path')
                 ->get()
                 ->mapWithKeys(fn (Category $category) => [$category->full_path => $category->id])
@@ -58,7 +53,7 @@ class CategoryQuery
 
     public function getDescendantsIdsMap(): array
     {
-        return Cache::tags(['categories', 'map'])->remember("categories:descendants_map", TimeToLive::ThreeDays->value, static function () {
+        return Cache::tags([self::CACHE_TAG, 'map'])->remember("categories:descendants_map", TimeToLive::ThreeDays->value, static function () {
             return Category::query()
                 ->with('descendants', fn($q) => $q->select('id', 'parent_id', '_lft', '_rgt'))
                 ->select('id', 'parent_id', '_lft', '_rgt')
@@ -70,11 +65,35 @@ class CategoryQuery
         });
     }
 
+    public function getDescendantsAndSelfIdsFor(int $categoryId): array
+    {
+        return $this->getDescendantsIdsMap()[$categoryId] ?? [$categoryId];
+    }
+
     public function getDescendantsAndSelfIdsByPath(string $path): array
     {
         return $this->getDescendantsAndSelfIdsFor(
             $this->findIdByPath($path) ?? 0
         );
+    }
+
+    public function getAncestorsIdsMap(): array
+    {
+        return Cache::tags([self::CACHE_TAG, 'map'])->remember("categories:ancestors_map", TimeToLive::ThreeDays->value, static function () {
+            return Category::query()
+                ->with('ancestors', fn($q) => $q->select('id', 'parent_id', '_lft', '_rgt'))
+                ->select('id', 'parent_id', '_lft', '_rgt')
+                ->get()
+                ->mapWithKeys(fn (Category $category) => [
+                    $category->id => $category->ancestors->pluck('id')->push($category->id)->toArray()
+                ])
+                ->toArray();
+        });
+    }
+
+    public function getAncestorsAndSelfIdsFor(int $categoryId): array
+    {
+        return $this->getAncestorsIdsMap()[$categoryId] ?? [$categoryId];
     }
 
     public function clearCache(): void

@@ -44,7 +44,6 @@ class CatalogController extends Controller
         ProductQuery $productQuery,
         FeatureQuery $featureQuery,
     ): Response {
-        $features = $featureQuery->query()->forCategoryAndAncestors($category)->get();
         $products = $productQuery->query()
             ->forListingPreset()
             ->whereCategoryAndDescendants($category)
@@ -54,7 +53,7 @@ class CatalogController extends Controller
 
         return Inertia::render('catalog/CatalogCategoryPage', [
             'category' => $category,
-            'features' => $features,
+            'features' => $featureQuery->getFeaturesByCategory($category->id),
             'filtersValues' => $request->getValues(),
             'categories' => $categoryQuery->getTree(),
             'products' => ProductForListingData::collect($products),

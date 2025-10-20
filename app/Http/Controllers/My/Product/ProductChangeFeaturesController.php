@@ -6,6 +6,7 @@ use App\DTO\Product\ProductAttachFeaturesDto;
 use App\Http\Controllers\Controller;
 use App\Models\Feature;
 use App\Models\Product;
+use App\Services\Feature\FeatureQuery;
 use App\Services\Product\ProductManager;
 use App\Services\Toaster;
 use Illuminate\Http\RedirectResponse;
@@ -14,11 +15,11 @@ use Inertia\Response;
 
 class ProductChangeFeaturesController extends Controller
 {
-    public function index(Product $product): Response
+    public function index(Product $product, FeatureQuery $featureQuery): Response
     {
         return Inertia::render('my/products/ProductChangeFeaturesModal', [
             'product' => $product,
-            'features' => Feature::query()->forCategoryAndAncestors($product->category)->get(),
+            'features' => $featureQuery->getFeaturesByCategory($product->category_id),
             'featureValues' => $product->features->toIdValuePairs(),
         ]);
     }
