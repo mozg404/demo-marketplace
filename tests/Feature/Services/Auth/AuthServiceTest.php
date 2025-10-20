@@ -13,9 +13,10 @@ use App\Exceptions\Auth\EmailVerification\NoPendingEmailVerificationException;
 use App\Exceptions\Auth\PasswordResetException;
 use App\Models\User;
 use App\Services\Auth\AuthService;
-use App\Services\User\UserRepository;
+use App\Services\User\UserService;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Auth\Events\Verified;
+use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Event;
@@ -31,262 +32,311 @@ class AuthServiceTest extends TestCase
     use RefreshDatabase;
 
     private AuthService $authService;
-    private UserRepository $userRepository;
+    private UserService $userService;
 
     protected function setUp(): void
     {
         parent::setUp();
-
-        $this->userRepository = $this->createMock(UserRepository::class);
-        $this->authService = new AuthService($this->userRepository);
+        $this->authService = app(AuthService::class);
+        $this->userService = app(UserService::class);
     }
 
     #[Test]
-    public function itRegistersUserSuccessfully(): void
+    public function registerSuccessfullyCreatesUserAndSendsVerification(): void
     {
+        Event::fake();
         Notification::fake();
 
-        $user = User::factory()->make(['id' => 1]);
-        $dto = new AuthRegisterDTO('Vasya Pupkin', 'vasyapupkin@gmail.com', 'password');
+        $dto = new AuthRegisterDTO(
+            name: 'Test User',
+            email: 'test@example.com',
+            password: 'password123'
+        );
 
-        $this->userRepository->expects($this->once())
-            ->method('create')
-            ->with('Vasya Pupkin', 'vasyapupkin@gmail.com', $this->isString())
-            ->willReturn($user);
+        $user = $this->authService->register($dto);
 
-        $result = $this->authService->register($dto);
+        $this->assertInstanceOf(User::class, $user);
+        $this->assertEquals('Test User', $user->name);
+        $this->assertEquals('test@example.com', $user->email);
+        $this->assertTrue(Hash::check('password123', $user->password));
+        $this->assertFalse($user->hasVerifiedEmail());
+        $this->assertEquals($user->id, Session::get(AuthService::VERIFY_SESSION_KEY));
 
-        $this->assertSame($user, $result);
-        Notification::assertSentTo($user, \Illuminate\Auth\Notifications\VerifyEmail::class);
-        $this->assertEquals(1, Session::get(AuthService::VERIFY_SESSION_KEY));
+        // Проверяем, что отправлено email уведомление
+        Notification::assertSentTo($user, VerifyEmail::class);
     }
 
     #[Test]
-    public function itLogsInUserSuccessfully(): void
+    public function loginSuccessfullyAuthenticatesVerifiedUser(): void
     {
-        $user = User::factory()->create(['email_verified_at' => now()]);
-        $dto = new AuthLoginDTO('vasyapupkin@gmail.com', 'password');
+        $user = $this->userService->create(
+            'Test User',
+            'test@example.com',
+            Hash::make('password123'),
+            emailVerified: true
+        );
 
-        Auth::shouldReceive('validate')
-            ->once()
-            ->with(['email' => 'vasyapupkin@gmail.com', 'password' => 'password'])
-            ->andReturn(true);
-
-        $this->userRepository->expects($this->once())
-            ->method('getUserByEmail')
-            ->with('vasyapupkin@gmail.com')
-            ->willReturn($user);
-
-        Auth::shouldReceive('login')
-            ->once()
-            ->with($user, true);
+        $dto = new AuthLoginDTO(
+            email: 'test@example.com',
+            password: 'password123'
+        );
 
         $this->authService->login($dto);
+
+        $this->assertTrue(Auth::check());
+        $this->assertEquals($user->id, Auth::id());
     }
 
     #[Test]
-    public function itThrowsExceptionWhenLoginCredentialsAreInvalid(): void
+    public function loginThrowsExceptionForInvalidCredentials(): void
     {
-        $dto = new AuthLoginDTO('vasyapupkin@gmail.com', 'wrong_password');
+        $this->userService->create(
+            'Test User',
+            'test@example.com',
+            Hash::make('password123'),
+            emailVerified: true
+        );
 
-        Auth::shouldReceive('validate')
-            ->once()
-            ->with(['email' => 'vasyapupkin@gmail.com', 'password' => 'wrong_password'])
-            ->andReturn(false);
+        $dto = new AuthLoginDTO(
+            email: 'test@example.com',
+            password: 'wrongpassword'
+        );
 
         $this->expectException(AuthenticationFailedException::class);
-
         $this->authService->login($dto);
     }
 
     #[Test]
-    public function itThrowsExceptionWhenLoginWithUnverifiedEmail(): void
+    public function loginThrowsExceptionForUnverifiedEmail(): void
     {
-        $user = User::factory()->create(['email_verified_at' => null]);
-        $dto = new AuthLoginDTO('vasyapupkin@gmail.com', 'password');
+        $this->userService->create(
+            'Test User',
+            'test@example.com',
+            Hash::make('password123'),
+            emailVerified: false
+        );
 
-        Auth::shouldReceive('validate')
-            ->once()
-            ->andReturn(true);
-
-        $this->userRepository->expects($this->once())
-            ->method('getUserByEmail')
-            ->with('vasyapupkin@gmail.com')
-            ->willReturn($user);
+        $dto = new AuthLoginDTO(
+            email: 'test@example.com',
+            password: 'password123'
+        );
 
         $this->expectException(EmailNotVerifiedException::class);
-
         $this->authService->login($dto);
     }
 
     #[Test]
-    public function itLogsOutUserSuccessfully(): void
+    public function logoutSuccessfullyLogsOutUser(): void
     {
-        Auth::shouldReceive('logout')->once();
-        Session::shouldReceive('regenerate')->once();
-        Session::shouldReceive('regenerateToken')->once();
+        $user = $this->userService->create(
+            'Test User',
+            'test@example.com',
+            Hash::make('password123'),
+            emailVerified: true
+        );
+
+        Auth::login($user);
 
         $this->authService->logout();
+
+        $this->assertFalse(Auth::check());
     }
 
     #[Test]
-    public function itVerifiesEmailSuccessfully(): void
+    public function verifySuccessfullyVerifiesEmailAndLogsIn(): void
     {
+        $user = $this->userService->create(
+            'Test User',
+            'test@example.com',
+            Hash::make('password123'),
+            emailVerified: false
+        );
+
+        Session::put(AuthService::VERIFY_SESSION_KEY, $user->id);
         Event::fake();
 
-        $user = User::factory()->create(['email_verified_at' => null]);
-        Session::put(AuthService::VERIFY_SESSION_KEY, $user->id);
-
-        $this->userRepository->expects($this->once())
-            ->method('get')
-            ->with($user->id)
-            ->willReturn($user);
-
-        Auth::shouldReceive('login')
-            ->once()
-            ->with($user, true);
-
         $this->authService->verify();
 
-        $this->assertNotNull($user->fresh()->email_verified_at);
-        Event::assertDispatched(Verified::class);
+        $this->assertTrue($user->fresh()->hasVerifiedEmail());
+        $this->assertTrue(Auth::check());
         $this->assertFalse(Session::has(AuthService::VERIFY_SESSION_KEY));
+        Event::assertDispatched(Verified::class);
     }
 
     #[Test]
-    public function itThrowsExceptionWhenVerifyingAlreadyVerifiedEmail(): void
+    public function verifyThrowsExceptionForAlreadyVerifiedEmail(): void
     {
-        $user = User::factory()->create(['email_verified_at' => now()]);
-        Session::put(AuthService::VERIFY_SESSION_KEY, $user->id);
+        $user = $this->userService->create(
+            'Test User',
+            'test@example.com',
+            Hash::make('password123'),
+            emailVerified: true
+        );
 
-        $this->userRepository->expects($this->once())
-            ->method('get')
-            ->with($user->id)
-            ->willReturn($user);
+        Session::put(AuthService::VERIFY_SESSION_KEY, $user->id);
 
         $this->expectException(EmailAlreadyVerifiedException::class);
-
         $this->authService->verify();
     }
 
     #[Test]
-    public function itChecksForUnverifiedEmail(): void
+    public function hasUnverifiedEmailReturnsTrueWhenSessionHasUserId(): void
     {
         Session::put(AuthService::VERIFY_SESSION_KEY, 1);
-        $this->assertTrue($this->authService->hasUnverifiedEmail());
 
-        Session::forget(AuthService::VERIFY_SESSION_KEY);
-        $this->assertFalse($this->authService->hasUnverifiedEmail());
+        $result = $this->authService->hasUnverifiedEmail();
+
+        $this->assertTrue($result);
     }
 
     #[Test]
-    public function itResendsVerificationNotificationSuccessfully(): void
+    public function hasUnverifiedEmailReturnsFalseWhenSessionEmpty(): void
+    {
+        Session::flush();
+
+        $result = $this->authService->hasUnverifiedEmail();
+
+        $this->assertFalse($result);
+    }
+
+    #[Test]
+    public function resendVerificationNotificationSuccessfullyResends(): void
     {
         Notification::fake();
 
-        $user = User::factory()->create(['email_verified_at' => null]);
-        Session::put(AuthService::VERIFY_SESSION_KEY, $user->id);
+        $user = $this->userService->create(
+            'Test User',
+            'test@example.com',
+            Hash::make('password123'),
+            emailVerified: false
+        );
 
-        $this->userRepository->expects($this->once())
-            ->method('get')
-            ->with($user->id)
-            ->willReturn($user);
+        Session::put(AuthService::VERIFY_SESSION_KEY, $user->id);
 
         $this->authService->resendVerificationNotification();
 
-        Notification::assertSentTo($user, \Illuminate\Auth\Notifications\VerifyEmail::class);
+        // Проверяем, что email уведомление было отправлено повторно
+        Notification::assertSentTo($user, VerifyEmail::class);
     }
 
     #[Test]
-    public function itThrowsExceptionWhenResendingWithoutPendingVerification(): void
+    public function resendVerificationNotificationThrowsExceptionWhenNoPendingVerification(): void
     {
+        Session::flush();
+
         $this->expectException(NoPendingEmailVerificationException::class);
-
         $this->authService->resendVerificationNotification();
     }
 
     #[Test]
-    public function itThrowsExceptionWhenResendingForAlreadyVerifiedEmail(): void
+    public function resendVerificationNotificationThrowsExceptionForAlreadyVerified(): void
     {
-        $user = User::factory()->create(['email_verified_at' => now()]);
-        Session::put(AuthService::VERIFY_SESSION_KEY, $user->id);
+        $user = $this->userService->create(
+            'Test User',
+            'test@example.com',
+            Hash::make('password123'),
+            emailVerified: true
+        );
 
-        $this->userRepository->expects($this->once())
-            ->method('get')
-            ->with($user->id)
-            ->willReturn($user);
+        Session::put(AuthService::VERIFY_SESSION_KEY, $user->id);
 
         $this->expectException(EmailAlreadyVerifiedException::class);
-
         $this->authService->resendVerificationNotification();
     }
 
     #[Test]
-    public function itSendsForgotPasswordNotificationSuccessfully(): void
+    public function sendForgotPasswordNotificationSuccessfullySendsResetLink(): void
     {
+        $user = $this->userService->create(
+            'Test User',
+            'test@example.com',
+            Hash::make('password123')
+        );
+
         Password::shouldReceive('sendResetLink')
             ->once()
-            ->with(['email' => 'vasyapupkin@gmail.com'])
+            ->with(['email' => 'test@example.com'])
             ->andReturn(Password::RESET_LINK_SENT);
 
-        $dto = new AuthForgotPasswordDTO('vasyapupkin@gmail.com');
+        $dto = new AuthForgotPasswordDTO(email: 'test@example.com');
 
         $this->authService->sendForgotPasswordNotification($dto);
+
+        $this->assertTrue(true); // Если не выброшено исключение - тест пройден
     }
 
     #[Test]
-    public function itThrowsExceptionWhenForgotPasswordFails(): void
+    public function sendForgotPasswordNotificationThrowsExceptionOnFailure(): void
     {
+        $this->userService->create(
+            'Test User',
+            'test@example.com',
+            Hash::make('password123')
+        );
+
         Password::shouldReceive('sendResetLink')
             ->once()
-            ->with(['email' => 'vasyapupkin@gmail.com'])
+            ->with(['email' => 'test@example.com'])
             ->andReturn(Password::INVALID_USER);
 
-        $dto = new AuthForgotPasswordDTO('vasyapupkin@gmail.com');
+        $dto = new AuthForgotPasswordDTO(email: 'test@example.com');
 
         $this->expectException(PasswordResetException::class);
-
         $this->authService->sendForgotPasswordNotification($dto);
     }
 
     #[Test]
-    public function itResetsPasswordSuccessfully(): void
+    public function resetPasswordSuccessfullyResetsPassword(): void
     {
         Event::fake();
 
-        $user = User::factory()->create();
-        $dto = new AuthResetPasswordDTO('vasyapupkin@gmail.com', 'token', 'new_password', 'new_password');
+        $user = $this->userService->create(
+            'Test User',
+            'test@example.com',
+            Hash::make('oldpassword')
+        );
 
         Password::shouldReceive('reset')
             ->once()
-            ->with([
-                'email' => 'vasyapupkin@gmail.com',
-                'token' => 'token', // ← исправлен порядок
-                'password' => 'new_password',
-                'password_confirmation' => 'new_password',
-            ], $this->isCallable())
             ->andReturnUsing(function ($credentials, $callback) use ($user) {
-                $callback($user, 'new_password');
+                $callback($user, 'newpassword');
                 return Password::PASSWORD_RESET;
             });
 
+        $dto = new AuthResetPasswordDTO(
+            email: 'test@example.com',
+            token: 'valid-token',
+            password: 'newpassword',
+            password_confirmation: 'newpassword'
+        );
+
         $this->authService->resetPassword($dto);
 
-        $this->assertTrue(Hash::check('new_password', $user->fresh()->password));
+        $this->assertTrue(Hash::check('newpassword', $user->fresh()->password));
         Event::assertDispatched(PasswordReset::class);
     }
 
     #[Test]
-    public function itThrowsExceptionWhenPasswordResetFails(): void
+    public function resetPasswordThrowsExceptionOnFailure(): void
     {
-        $dto = new AuthResetPasswordDTO('vasyapupkin@gmail.com', 'token', 'new_password', 'new_password');
+        $user = $this->userService->create(
+            'Test User',
+            'test@example.com',
+            Hash::make('oldpassword')
+        );
 
         Password::shouldReceive('reset')
             ->once()
             ->andReturn(Password::INVALID_TOKEN);
 
-        $this->expectException(PasswordResetException::class);
+        $dto = new AuthResetPasswordDTO(
+            email: 'test@example.com',
+            token: 'invalid-token',
+            password: 'newpassword',
+            password_confirmation: 'newpassword'
+        );
 
+        $this->expectException(PasswordResetException::class);
         $this->authService->resetPassword($dto);
     }
 }

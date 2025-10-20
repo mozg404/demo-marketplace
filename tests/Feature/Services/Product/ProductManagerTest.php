@@ -114,9 +114,10 @@ class ProductManagerTest extends TestCase
 
         $newCategory = Category::factory()->create();
         $dto = new ProductUpdateBaseDto(
-            category_id: $newCategory->id,
             name: 'Updated Product Name',
-            price: new Price(2500, 2000)
+            price: new Price(2500, 2000),
+            category_id: $newCategory->id,
+            status: ProductStatus::ACTIVE
         );
 
         $this->productManager->updateBaseProduct($product, $dto);
@@ -126,6 +127,7 @@ class ProductManagerTest extends TestCase
         $this->assertEquals($dto->name, $product->name);
         $this->assertEquals($dto->price->getCurrentPrice(), $product->price->getCurrentPrice());
         $this->assertEquals($dto->price->getBasePrice(), $product->price->getBasePrice());
+        $this->assertEquals($dto->status, $product->status);
     }
 
     #[Test]

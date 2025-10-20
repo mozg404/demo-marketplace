@@ -7,6 +7,9 @@ namespace App\Builders;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 
+/**
+ * @method User findOrFail($id, $columns)
+ */
 class UserQueryBuilder extends Builder
 {
     public function findByEmail(string $email): ?User

@@ -12,7 +12,7 @@ use App\Exceptions\Auth\EmailVerification\EmailNotVerifiedException;
 use App\Exceptions\Auth\EmailVerification\NoPendingEmailVerificationException;
 use App\Exceptions\Auth\PasswordResetException;
 use App\Models\User;
-use App\Services\User\UserRepository;
+use App\Services\User\UserService;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Auth\Events\Verified;
 use Illuminate\Support\Facades\Auth;
@@ -27,13 +27,13 @@ readonly class AuthService
     public const string VERIFY_SESSION_KEY = 'auth_verification_user_id';
 
     public function __construct(
-        private UserRepository $repository,
+        private UserService $userService,
     ) {
     }
 
     public function register(AuthRegisterDTO $dto): User
     {
-        $user = $this->repository->create(
+        $user = $this->userService->create(
             $dto->name,
             $dto->email,
             Hash::make($dto->password),
@@ -50,7 +50,11 @@ readonly class AuthService
             throw new AuthenticationFailedException();
         }
 
-        $user = $this->repository->getUserByEmail($dto->email);
+        $user = User::query()->findByEmail($dto->email);
+
+        if (!isset($user)) {
+            throw new AuthenticationFailedException();
+        }
 
         if (!$user->hasVerifiedEmail()) {
             throw new EmailNotVerifiedException();
@@ -68,7 +72,7 @@ readonly class AuthService
 
     public function verify(): void
     {
-        $user = $this->repository->get(Session::get(self::VERIFY_SESSION_KEY));
+        $user = User::findOrFail(Session::get(self::VERIFY_SESSION_KEY));
 
         if ($user->hasVerifiedEmail()) {
             throw new EmailAlreadyVerifiedException("Email $user->email уже подтвержден");
@@ -92,7 +96,7 @@ readonly class AuthService
     {
         throw_unless($this->hasUnverifiedEmail(), new NoPendingEmailVerificationException());
 
-        $user = $this->repository->get(Session::get(self::VERIFY_SESSION_KEY));
+        $user = User::findOrFail(Session::get(self::VERIFY_SESSION_KEY));
         throw_if($user->hasVerifiedEmail(), new EmailAlreadyVerifiedException());
 
         $user->sendEmailVerificationNotification();
