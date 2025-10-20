@@ -2,7 +2,6 @@
 
 namespace App\Services\Product;
 
-use App\Builders\ProductQueryBuilder;
 use App\Collections\ProductCollection;
 use App\Enum\ProductGroup;
 use App\Enum\TimeToLive;
@@ -17,11 +16,6 @@ readonly class ProductQuery
     public function __construct(
         private CategoryQuery $categoryQuery,
     ) {
-    }
-
-    public function query(): ProductQueryBuilder
-    {
-        return Product::query();
     }
 
     public function search(string $request): ProductCollection

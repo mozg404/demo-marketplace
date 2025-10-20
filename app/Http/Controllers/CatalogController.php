@@ -11,7 +11,6 @@ use App\Models\Category;
 use App\Models\Product;
 use App\Services\Category\CategoryQuery;
 use App\Services\Feature\FeatureQuery;
-use App\Services\Product\ProductQuery;
 use App\Support\SeoBuilder;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -21,9 +20,8 @@ class CatalogController extends Controller
     public function index(
         CatalogFilterableRequest $request,
         CategoryQuery $categoryQuery,
-        ProductQuery $productQuery,
     ): Response {
-        $products = $productQuery->query()
+        $products = Product::query()
             ->forListingPreset()
             ->filterFromArray($request->getValues())
             ->paginate(config('project.catalog_products_count'))
@@ -41,10 +39,9 @@ class CatalogController extends Controller
         Category $category,
         CatalogCategoryFilterableRequest $request,
         CategoryQuery $categoryQuery,
-        ProductQuery $productQuery,
         FeatureQuery $featureQuery,
     ): Response {
-        $products = $productQuery->query()
+        $products = Product::query()
             ->forListingPreset()
             ->whereCategoryAndDescendants($category)
             ->filterFromArray($request->getValues())

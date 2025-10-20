@@ -5,16 +5,15 @@ namespace App\Http\Controllers;
 use App\Data\Products\ProductForListingData;
 use App\Data\User\UserForListingData;
 use App\Data\User\UserData;
+use App\Models\Product;
 use App\Models\User;
-use App\Services\Product\ProductQuery;
-use App\Services\User\UserQuery;
 use App\Support\SeoBuilder;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class UserController extends Controller
 {
-    public function index(UserQuery $repository): Response
+    public function index(): Response
     {
         $users = User::query()
             ->withMedia()
@@ -28,9 +27,9 @@ class UserController extends Controller
         ]);
     }
 
-    public function show(User $user, ProductQuery $productQuery): Response
+    public function show(User $user): Response
     {
-        $products = $productQuery->query()
+        $products = Product::query()
             ->forListingPreset()
             ->whereSeller($user)
             ->latest()

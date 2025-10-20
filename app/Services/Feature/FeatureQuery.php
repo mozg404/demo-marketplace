@@ -17,11 +17,6 @@ readonly class FeatureQuery
     ) {
     }
 
-    public function query(): FeatureQueryBuilder
-    {
-        return Feature::query();
-    }
-
     public function getFeaturesByCategory(int $categoryId): FeatureCollection
     {
         return Cache::tags([self::CACHE_TAG])

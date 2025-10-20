@@ -13,14 +13,9 @@ class CategoryQuery
 {
     public const string CACHE_TAG = 'categories';
 
-    public function query(): CategoryQueryBuilder
-    {
-        return Category::query();
-    }
-
     public function getByFullPath(string $fullPath): Category
     {
-        $category = $this->query()->whereFullPath($fullPath)->first();
+        $category = Category::query()->whereFullPath($fullPath)->first();
 
         if (!isset($category)) {
             throw new CategoryNotFoundException();
