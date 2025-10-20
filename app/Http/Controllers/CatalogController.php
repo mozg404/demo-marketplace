@@ -23,7 +23,6 @@ class CatalogController extends Controller
         CategoryQuery $categoryQuery,
         ProductQuery $productQuery,
     ): Response {
-        $categories = $categoryQuery->query()->get()->toTree();
         $products = $productQuery->query()
             ->forListingPreset()
             ->filterFromArray($request->getValues())
@@ -32,7 +31,7 @@ class CatalogController extends Controller
 
         return Inertia::render('catalog/CatalogPage', [
             'filtersValues' => $request->getValues(),
-            'categories' => $categories,
+            'categories' => $categoryQuery->getTree(),
             'products' => ProductForListingData::collect($products),
             'seo' => new SeoBuilder('Каталог товаров'),
         ]);
@@ -45,7 +44,6 @@ class CatalogController extends Controller
         ProductQuery $productQuery,
         FeatureQuery $featureQuery,
     ): Response {
-        $categories = $categoryQuery->query()->get()->toTree();
         $features = $featureQuery->query()->forCategoryAndAncestors($category)->get();
         $products = $productQuery->query()
             ->forListingPreset()
@@ -58,7 +56,7 @@ class CatalogController extends Controller
             'category' => $category,
             'features' => $features,
             'filtersValues' => $request->getValues(),
-            'categories' => $categories,
+            'categories' => $categoryQuery->getTree(),
             'products' => ProductForListingData::collect($products),
             'seo' => new SeoBuilder($category),
         ]);

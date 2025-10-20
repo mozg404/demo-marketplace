@@ -3,16 +3,15 @@
 namespace App\Services\Category;
 
 use App\Builders\CategoryQueryBuilder;
+use App\Enum\TimeToLive;
 use App\Exceptions\Category\CategoryNotFoundException;
 use App\Models\Category;
 use Illuminate\Support\Facades\Cache;
+use Kalnoy\Nestedset\Collection as NestedCollection;
 
 class CategoryQuery
 {
-    public const array CACHE_KEYS = [
-        'categories:path_to_id_map',
-        'categories:descendants_map',
-    ];
+    public const string CACHE_TAG = 'categories';
 
     public function query(): CategoryQueryBuilder
     {
@@ -30,6 +29,13 @@ class CategoryQuery
         return $category;
     }
 
+    public function getTree(): NestedCollection
+    {
+        return Cache::tags(['categories', 'tree'])->remember("categories:tree", TimeToLive::ThreeDays->value, static function () {
+            return Category::query()->withDepth()->get()->toTree();
+        });
+    }
+    
     public function findIdByPath(string $path): ?int
     {
         return $this->getPathIdsMap()[$path] ?? null;
@@ -42,7 +48,7 @@ class CategoryQuery
 
     public function getPathIdsMap(): array
     {
-        return Cache::remember("categories:path_to_id_map", 86400, function () {
+        return Cache::tags(['categories', 'map'])->remember("categories:path_to_id_map", TimeToLive::ThreeDays->value, static function () {
             return Category::query()->select('id', 'full_path')
                 ->get()
                 ->mapWithKeys(fn (Category $category) => [$category->full_path => $category->id])
@@ -52,7 +58,7 @@ class CategoryQuery
 
     public function getDescendantsIdsMap(): array
     {
-        return Cache::remember("categories:descendants_map", 86400, function () {
+        return Cache::tags(['categories', 'map'])->remember("categories:descendants_map", TimeToLive::ThreeDays->value, static function () {
             return Category::query()
                 ->with('descendants', fn($q) => $q->select('id', 'parent_id', '_lft', '_rgt'))
                 ->select('id', 'parent_id', '_lft', '_rgt')
@@ -73,8 +79,6 @@ class CategoryQuery
 
     public function clearCache(): void
     {
-        foreach (self::CACHE_KEYS as $key) {
-            Cache::forget($key);
-        }
+        Cache::tags([self::CACHE_TAG])->flush();
     }
 }

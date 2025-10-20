@@ -4,8 +4,8 @@ namespace App\Http\Controllers\My\Product;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\MyProduct\ProductChangeBaseRequest;
-use App\Models\Category;
 use App\Models\Product;
+use App\Services\Category\CategoryQuery;
 use App\Services\Product\ProductManager;
 use App\Services\Toaster;
 use Illuminate\Http\RedirectResponse;
@@ -14,11 +14,11 @@ use Inertia\Response;
 
 class ProductChangeBaseController extends Controller
 {
-    public function index(Product $product): Response
+    public function index(Product $product, CategoryQuery $categoryQuery): Response
     {
         return Inertia::render('my/products/ProductChangeBaseModal', [
             'product' => $product,
-            'categoriesTree' => Category::query()->withDepth()->get()->toTree(),
+            'categoriesTree' => $categoryQuery->getTree(),
         ]);
     }
 
