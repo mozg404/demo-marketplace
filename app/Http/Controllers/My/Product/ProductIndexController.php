@@ -20,7 +20,7 @@ class ProductIndexController extends Controller
             ->withStockItemsCount()
             ->withAvailableCount()
             ->filterFromArray($request->getFiltersValues())
-            ->paginate(10)
+            ->paginate(config('project.cabinet_products_count'))
             ->appends($request->getFiltersValues());
 
         return Inertia::render('my/products/ProductIndexPage', [

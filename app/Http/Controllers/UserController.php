@@ -20,7 +20,7 @@ class UserController extends Controller
             ->withMedia()
             ->withAvailableProductsCount()
             ->hasAvailableProducts()
-            ->paginate(20);
+            ->paginate(config('project.sellers_count'));
 
         return Inertia::render('users/UsersIndexPage', [
             'users' => UserForListingData::collect($users),
@@ -34,7 +34,7 @@ class UserController extends Controller
             ->forListingPreset()
             ->whereSeller($user)
             ->latest()
-            ->paginate(20);
+            ->paginate(config('project.seller_latest_products_count'));
 
         return Inertia::render('users/UsersShowPage', [
             'products' => ProductForListingData::collect($products),

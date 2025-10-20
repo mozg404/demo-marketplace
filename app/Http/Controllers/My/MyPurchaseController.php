@@ -24,8 +24,7 @@ class MyPurchaseController extends Controller
             ->withFeedback()
             ->isCompleted()
             ->whereBuyer(auth()->user())
-            ->paginate(10);
-
+            ->paginate(config('project.cabinet_purchases_count'));
 
         return Inertia::render('my/purchases/PurchasedIndexPage', [
             'purchasedItems' => PurchasedItemForListingData::collect($purchasedItems),
