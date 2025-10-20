@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\My\Product;
 
+use App\Data\Products\ProductChangeBaseData;
+use App\Enum\ProductStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\MyProduct\ProductChangeBaseRequest;
 use App\Models\Product;
@@ -17,7 +19,8 @@ class ProductChangeBaseController extends Controller
     public function index(Product $product, CategoryQuery $categoryQuery): Response
     {
         return Inertia::render('my/products/ProductChangeBaseModal', [
-            'product' => $product,
+            'product' => ProductChangeBaseData::from($product),
+            'statuses' => ProductStatus::names(),
             'categoriesTree' => $categoryQuery->getTree(),
         ]);
     }

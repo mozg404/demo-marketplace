@@ -4,6 +4,7 @@ namespace App\Http\Requests\MyProduct;
 
 use App\DTO\Product\ProductBaseCreateDto;
 use App\DTO\Product\ProductUpdateBaseDto;
+use App\Models\Product;
 use App\ValueObjects\Price;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -21,6 +22,7 @@ class ProductChangeBaseRequest extends FormRequest
             'price_base' => ['required', 'numeric', 'min:10'],
             'price_discount' => ['sometimes', 'nullable', 'numeric', 'lt:price_base'],
             'category_id' => ['required', 'int', 'exists:categories,id'],
+            'status' => ['required', $this->enum('status', Product::class)],
         ];
     }
 
@@ -33,6 +35,7 @@ class ProductChangeBaseRequest extends FormRequest
                 $this->validated('price_base'),
                 $this->validated('price_discount')
             ),
+            'status' => $this->validated('status'),
         ]);
     }
 }

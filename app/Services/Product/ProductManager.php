@@ -70,6 +70,7 @@ readonly class ProductManager
         $product->category_id = $dto->category_id;
         $product->name = $dto->name;
         $product->price = $dto->price;
+        $product->status = $dto->status;
         $product->save();
     }
 
