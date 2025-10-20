@@ -26,7 +26,7 @@ class CatalogController extends Controller
         $products = $productQuery->query()
             ->forListingPreset()
             ->filterFromArray($request->getValues())
-            ->paginate(20)
+            ->paginate(config('project.catalog_products_count'))
             ->appends($request->getValues());
 
         return Inertia::render('catalog/CatalogPage', [
@@ -48,7 +48,7 @@ class CatalogController extends Controller
             ->forListingPreset()
             ->whereCategoryAndDescendants($category)
             ->filterFromArray($request->getValues())
-            ->paginate(20)
+            ->paginate(config('project.catalog_products_count'))
             ->appends($request->getValues());
 
         return Inertia::render('catalog/CatalogCategoryPage', [

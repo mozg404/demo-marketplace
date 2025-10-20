@@ -6,7 +6,7 @@ use App\Models\Feedback;
 use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\User;
-use App\Services\RatingService;
+use App\Services\Rating\RatingService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
 use Tests\TestCase;

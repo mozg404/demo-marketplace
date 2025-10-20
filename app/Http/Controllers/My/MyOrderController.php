@@ -32,8 +32,8 @@ class MyOrderController extends Controller
         $orders = $orderQuery->query()
             ->whereUser(Auth::id())
             ->withItemsCount()
-            ->descOrder()
-            ->paginate(10);
+            ->latest()
+            ->paginate(config('cabinet.cabinet_orders_count'));
 
         return Inertia::render('my/orders/OrderIndexPage', [
             'orders' => OrderForListingData::collect($orders),

@@ -20,7 +20,7 @@ class MyBalanceController extends Controller
         $transactions = Transaction::query()
             ->whereUser(Auth::id())
             ->descOrder()
-            ->paginate(10);
+            ->paginate(config('project.cabinet_transactions_count'));
 
         return Inertia::render('my/balance/BalanceIndexPage', [
             'pagination' => TransactionData::collect($transactions),
