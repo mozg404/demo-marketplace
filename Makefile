@@ -115,30 +115,3 @@ clear-public-storage:
 
 clear-media:
 	./vendor/bin/sail php artisan media-library:clean
-
-# --------------------------
-# Подакшн
-# --------------------------
-
-prod: prod-down-clear prod-build prod-up prod-migrate prod-seed
-
-prod-up:
-	docker compose -f docker-compose.prod.yml --env-file .env.production up -d
-
-prod-down:
-	docker compose -f docker-compose.prod.yml --env-file .env.production down
-
-prod-down-clear:
-	docker compose -f docker-compose.prod.yml --env-file .env.production down -v --remove-orphans
-
-prod-build:
-	docker compose -f docker-compose.prod.yml --env-file .env.production build
-
-prod-migrate:
-	docker compose -f docker-compose.prod.yml --env-file .env.production exec app php artisan migrate --force
-
-prod-seed:
-	docker compose -f docker-compose.prod.yml --env-file .env.production exec app php artisan db:seed --force
-
-build:
-	docker compose -f docker-compose.prod.yml --env-file .env.production build
