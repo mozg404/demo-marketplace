@@ -56,13 +56,13 @@ const { addToCart, decreaseQuantity, deleteFromCart, form } = useCart()
                     class="rounded-3xl cursor-pointer hover:bg-primary hover:text-primary-foreground hover:border-primary"
                     size="icon"
                     @click="addToCart(item.product.id)"
-                    :disabled="form.processing || item.quantity >= item.product.available_stock_items_count"
+                    :disabled="form.processing || item.quantity >= item.product.available_count"
                   >
                     <Plus class="w-4 h-4"/>
                   </Button>
                 </div>
 
-                <span class="text-muted-foreground text-sm">В наличии: {{ item.product.available_stock_items_count }}</span>
+                <span class="text-muted-foreground text-sm">В наличии: {{ item.product.available_count }}</span>
               </div>
             </div>
           </div>

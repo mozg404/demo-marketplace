@@ -10,6 +10,7 @@ use App\Http\Controllers\CartController;
 use App\Http\Controllers\CatalogController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\IndexController;
+use App\Http\Controllers\My\Product\ProductChangeBaseController;
 use App\Http\Controllers\My\Settings\ChangeAvatarController;
 use App\Http\Controllers\My\Settings\PasswordChangeController;
 use App\Http\Controllers\My\MyBalanceController;
@@ -17,32 +18,22 @@ use App\Http\Controllers\My\MyOrderController;
 use App\Http\Controllers\My\MyPurchaseController;
 use App\Http\Controllers\My\MySaleController;
 use App\Http\Controllers\My\Order\OrderItemFeedbackController;
-use App\Http\Controllers\My\Product\ProductChangeCategoryController;
 use App\Http\Controllers\My\Product\ProductChangeDescriptionController;
 use App\Http\Controllers\My\Product\ProductChangeFeaturesController;
 use App\Http\Controllers\My\Product\ProductChangeImageController;
 use App\Http\Controllers\My\Product\ProductChangeInstructionController;
-use App\Http\Controllers\My\Product\ProductChangeNameController;
-use App\Http\Controllers\My\Product\ProductChangePriceController;
 use App\Http\Controllers\My\Product\ProductCreateController;
 use App\Http\Controllers\My\Product\ProductEditController;
 use App\Http\Controllers\My\Product\ProductIndexController as CabinetProductController;
 use App\Http\Controllers\My\Product\StockController;
 use App\Http\Controllers\My\Settings\ProfileUpdateController;
-use App\Http\Controllers\My\SettingsController;
 use App\Http\Controllers\PaymentCallbackController;
 use App\Http\Controllers\SandboxController;
 use App\Http\Controllers\SearchController;
-use App\Http\Controllers\TestController;
 use App\Http\Controllers\UserController;
 use App\Http\Middleware\CheckoutAccess;
 use App\Http\Middleware\CheckoutExpressAccess;
 use Illuminate\Support\Facades\Route;
-
-if (config('app.env') === 'local') {
-    Route::get('/test', [TestController::class, 'test']);
-    Route::get('/test-page', [TestController::class, 'testPage']);
-}
 
 // ---------------------------------------------
 // My
@@ -64,17 +55,11 @@ Route::middleware('auth')->prefix('/my')->group(function () {
             Route::get('/edit', [ProductEditController::class, 'index'])->name('my.products.edit');
 
             Route::prefix('/change')->group(function () {
-                Route::get('/name', [ProductChangeNameController::class, 'index'])->name('my.products.change.name');
-                Route::patch('/name', [ProductChangeNameController::class, 'update'])->name('my.products.change.name.update');
+                Route::get('/base', [ProductChangeBaseController::class, 'index'])->name('my.products.change.base');
+                Route::patch('/base', [ProductChangeBaseController::class, 'update'])->name('my.products.change.base.update');
 
                 Route::get('/image', [ProductChangeImageController::class, 'index'])->name('my.products.change.image');
                 Route::patch('/image', [ProductChangeImageController::class, 'update'])->name('my.products.change.image.update');
-
-                Route::get('/category', [ProductChangeCategoryController::class, 'index'])->name('my.products.change.category');
-                Route::patch('/category', [ProductChangeCategoryController::class, 'update'])->name('my.products.change.category.update');
-
-                Route::get('/price', [ProductChangePriceController::class, 'index'])->name('my.products.change.price');
-                Route::patch('/price', [ProductChangePriceController::class, 'update'])->name('my.products.change.price.update');
 
                 Route::get('/features', [ProductChangeFeaturesController::class, 'index'])->name('my.products.change.features');
                 Route::patch('/features', [ProductChangeFeaturesController::class, 'update'])->name('my.products.change.features.update');

@@ -9,7 +9,6 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Queue\InteractsWithQueue;
-use Illuminate\Support\Facades\Log;
 
 class CreateSpecificProduct implements ShouldQueue
 {
@@ -20,8 +19,8 @@ class CreateSpecificProduct implements ShouldQueue
     ) {
     }
 
-    public function handle(UserQuery $userQuery, DemoProductCreator $productCreator): void
+    public function handle(UserQuery $repository, DemoProductCreator $productCreator): void
     {
-        $productCreator->create($userQuery->getRandomUser(), $this->data);
+        $productCreator->create($repository->getRandomUser(), $this->data);
     }
 }

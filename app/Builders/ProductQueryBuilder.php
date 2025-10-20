@@ -295,21 +295,10 @@ class ProductQueryBuilder extends Builder
      * Включает количество доступных позиций
      * @return $this
      */
-    public function withAvailableStockItemsCount(): self
+    public function withAvailableCount(): self
     {
-        return $this->withCount(['stockItems as available_stock_items_count' => static function (StockItemQueryBuilder $builder) {
+        return $this->withCount(['stockItems as available_count' => static function (StockItemQueryBuilder $builder) {
             return $builder->isAvailable();
-        }]);
-    }
-
-    /**
-     * Включает количество зарезервированных позиций
-     * @return $this
-     */
-    public function withReservedStockItemsCount(): self
-    {
-        return $this->withCount(['stockItems as reserved_stock_items_count' => static function (StockItemQueryBuilder $builder) {
-            return $builder->isReserved();
         }]);
     }
 
@@ -328,6 +317,15 @@ class ProductQueryBuilder extends Builder
     }
 
     // -----------------------------------------------
+    // Select
+    // -----------------------------------------------
+
+    public function selectForListing(): self
+    {
+        return $this->select(['id', 'user_id', 'category_id', 'name', 'status', 'current_price', 'base_price', 'rating', 'created_at']);
+    }
+
+    // -----------------------------------------------
     // Presets
     // -----------------------------------------------
 
@@ -337,9 +335,10 @@ class ProductQueryBuilder extends Builder
     public function forListingPreset(): self
     {
         return $this
+            ->selectForListing()
             ->isActive()
             ->withMedia()
             ->hasAvailableStock()
-            ->withAvailableStockItemsCount();
+            ->withAvailableCount();
     }
 }

@@ -5,22 +5,21 @@ namespace App\Http\Controllers;
 use App\Data\Products\ProductForListingData;
 use App\Data\User\UserForListingData;
 use App\Data\User\UserData;
+use App\Models\Product;
 use App\Models\User;
-use App\Services\Product\ProductQuery;
-use App\Services\User\UserQuery;
 use App\Support\SeoBuilder;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class UserController extends Controller
 {
-    public function index(UserQuery $userQuery): Response
+    public function index(): Response
     {
-        $users = $userQuery->query()
+        $users = User::query()
             ->withMedia()
             ->withAvailableProductsCount()
             ->hasAvailableProducts()
-            ->paginate(20);
+            ->paginate(config('project.sellers_count'));
 
         return Inertia::render('users/UsersIndexPage', [
             'users' => UserForListingData::collect($users),
@@ -28,13 +27,13 @@ class UserController extends Controller
         ]);
     }
 
-    public function show(User $user, ProductQuery $productQuery): Response
+    public function show(User $user): Response
     {
-        $products = $productQuery->query()
+        $products = Product::query()
             ->forListingPreset()
             ->whereSeller($user)
             ->latest()
-            ->paginate(20);
+            ->paginate(config('project.seller_latest_products_count'));
 
         return Inertia::render('users/UsersShowPage', [
             'products' => ProductForListingData::collect($products),

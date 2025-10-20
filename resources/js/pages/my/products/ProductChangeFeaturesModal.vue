@@ -49,7 +49,6 @@ const submit = () => form.post(route('my.products.change.features.update', props
                 positionStrategy="fixed"
                 class="z-[1000] w-full"
               >
-                <SelectItem :value="null">Выбрать</SelectItem>
                 <SelectItem v-for="(option,key,index) in feature.options" :key="key" :value="key">{{ option }}</SelectItem>
               </SelectContent>
             </Select>

@@ -2,34 +2,28 @@
 
 namespace App\Services\User;
 
-use App\Builders\UserQueryBuilder;
 use App\Models\User;
 
 class UserQuery
 {
-    public function query(): UserQueryBuilder
+    public function getRandomUser(): ?User
     {
-        return User::query();
+        return User::query()->withoutAdmin()->inRandomOrder()->first();
     }
 
-    public function get(int $id): User
+    public function checkExistsByEmail(string $email): bool
     {
-        return User::findOrFail($id);
+        return User::query()->where('email', $email)->exists();
     }
 
-    public function getByEmail(string $email): User
+    public function getUserByEmail(string $email): User
     {
-        $user = $this->query()->findByEmail($email);
+        $user = User::query()->findByEmail($email);
 
         if (!$user) {
-            throw new \InvalidArgumentException("User with email {$email} not found");
+            throw new \InvalidArgumentException("Пользователь с email {$email} не найден");
         }
 
         return $user;
-    }
-
-    public function getRandomUser(): User
-    {
-        return $this->query()->withoutAdmin()->inRandomOrder()->first();
     }
 }

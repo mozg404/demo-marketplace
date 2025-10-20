@@ -5,13 +5,12 @@ namespace App\Http\Controllers\My\Product;
 use App\Data\Products\ProductDetailedData;
 use App\Data\Products\ProductForListingData;
 use App\Data\Products\StockItemDetailedData;
+use App\DTO\Product\StockCreateDto;
+use App\DTO\Product\StockUpdateDto;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\MyProduct\Stock\StockStoreRequest;
-use App\Http\Requests\MyProduct\Stock\StockUpdateRequest;
 use App\Models\Product;
 use App\Models\StockItem;
-use App\Services\Product\Stock\StockCreator;
-use App\Services\Product\Stock\StockUpdater;
+use App\Services\Product\ProductManager;
 use App\Services\Toaster;
 use App\Support\SeoBuilder;
 use Illuminate\Http\RedirectResponse;
@@ -45,11 +44,11 @@ class StockController extends Controller
 
     public function store(
         Product $product,
-        StockStoreRequest $request,
-        StockCreator $creator,
+        StockCreateDto $dto,
+        ProductManager $manager,
     ): RedirectResponse {
         try {
-            $creator->create($product, $request->input('content'));
+            $manager->createStockItem($product, $dto);
             $this->toaster->success("Позиция успешно добавлена");
 
             return back();
@@ -69,11 +68,11 @@ class StockController extends Controller
     public function update(
         Product $product,
         StockItem $stockItem,
-        StockUpdateRequest $request,
-        StockUpdater $updater,
+        StockUpdateDto $dto,
+        ProductManager $manager,
     ): RedirectResponse {
         try {
-            $updater->update($stockItem, $request->input('content'));
+            $manager->updateStockItem($stockItem, $dto);
             $this->toaster->success("Позиция успешно изменена");
 
             return back();

@@ -3,16 +3,14 @@
 namespace App\Services\Cart;
 
 use App\Contracts\Cart;
-use App\Data\Cart\CartData;
-use App\Data\Cart\CartItemData;
+use App\DTO\Cart\CartDto;
+use App\DTO\Cart\CartItemDto;
 use App\Models\Product;
-use App\Services\Product\ProductQuery;
 
 readonly class CartQuery
 {
     public function __construct(
         private Cart $cart,
-        private ProductQuery $productQuery,
     ) {
     }
 
@@ -31,16 +29,14 @@ readonly class CartQuery
         return $this->cart->getQuantityFor($product->id);
     }
 
-    public function all(): CartData
+    public function all(): CartDto
     {
-        $items = $this->productQuery->query()
-            ->whereIds($this->cart->getIds())
-            ->withAvailableStockItemsCount()
-            ->get()
-            ?->map(function (Product $product) {
-                return CartItemData::from($product, $this->getQuantityFor($product));
-            });
+        $items = [];
 
-        return new CartData($items ?? []);
+        foreach ($this->cart->getItems() as $id => $quantity) {
+            $items[] = new CartItemDto($id, $quantity);
+        }
+
+        return CartDto::from(['items' => $items]);
     }
 }

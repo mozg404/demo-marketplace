@@ -31,7 +31,7 @@ class ProductSoldData extends Data
             stock_item_id: $orderItem->stock_item_id,
             name: $orderItem->product->name,
             price: $orderItem->price,
-            preview: $orderItem->product->preview,
+            preview: ProductPreviewData::from($orderItem->product->preview),
             status: $orderItem->product->status,
             buyer: UserData::from($orderItem->order->user),
             sold_at: $orderItem->order->paid_at

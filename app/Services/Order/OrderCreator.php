@@ -2,66 +2,58 @@
 
 namespace App\Services\Order;
 
-use App\Collections\CreatableOrderItemCollection;
-use App\Data\Orders\CreatableOrderItemData;
+use App\DTO\Product\PurchasableItemDto;
 use App\Enum\OrderStatus;
-use App\Exceptions\Product\ProductUnavailableException;
 use App\Models\Order;
-use App\Models\StockItem;
-use App\Models\User;
-use App\Services\Product\ProductAvailabilityChecker;
-use App\Services\Product\Stock\StockQuery;
-use App\Services\Product\Stock\StockReserver;
-use Illuminate\Support\Carbon;
+use App\Services\Price\PriceService;
+use App\Services\Product\ProductSaleManager;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Throwable;
 
 readonly class OrderCreator
 {
     public function __construct(
-        private ProductAvailabilityChecker $availabilityChecker,
-        private StockQuery $stockQuery,
-        private StockReserver $stockReserver,
+        private ProductSaleManager $saleManager,
+        private PriceService $priceService,
     ) {
     }
 
     /**
+     * @param int $userId
+     * @param array<PurchasableItemDto>|Collection<PurchasableItemDto> $items
+     * @return Order
      * @throws Throwable
      */
-    public function create(User $user, CreatableOrderItemCollection $items, ?Carbon $createdAt = null): Order
+    public function create(int $userId, Collection|array $items): Order
     {
-        // Проверяем, что у товаров из списка есть нужное количество позиций на складе
-        $items->each(fn(CreatableOrderItemData $item) => $this->availabilityChecker->ensureCanByPurchased($item->product, $item->quantity));
+        $this->saleManager->validatePurchasableItems($items);
 
-        // Создаем новый заказ
-        return DB::transaction(function () use ($user, $items, $createdAt) {
+        return DB::transaction(function () use ($userId, $items) {
+            $reservedProducts = $this->saleManager->reservePurchasableItems($items);
             $order = Order::create([
-                'user_id' => $user->id,
-                'amount' => $items->getTotalPrice()->getCurrentPrice(),
+                'user_id' => $userId,
+                'amount' => $this->priceService->calculateTotalQuantityPrice($reservedProducts)->getCurrentPrice(),
                 'status' => OrderStatus::PENDING,
-                'created_at' => $createdAt ?? Carbon::now(),
             ]);
 
-            $items->each(function (CreatableOrderItemData $creatableItem) use ($order) {
-                // Запрашиваем свободные позиции со склада
-                $stockItems = $this->stockQuery->getAvailableItemsFor($creatableItem->product, $creatableItem->quantity);
-
-                // Пробегаемся по позициям и резервируем их для заказа
-                $stockItems->each(function (StockItem $stockItem) use ($creatableItem, $order) {
-                    // Создаем позицию заказа
-                    $orderItem = $order->items()->create([
-                        'product_id' => $creatableItem->product->id,
-                        'stock_item_id' => $stockItem->id,
-                        'current_price' => $creatableItem->product->price->getCurrentPrice(),
-                        'base_price' => $creatableItem->product->price->getBasePrice(),
+            foreach ($reservedProducts as $reservedProduct) {
+                foreach ($reservedProduct->stockIds as $stockId) {
+                    $order->items()->create([
+                        'product_id' => $reservedProduct->productId,
+                        'stock_item_id' => $stockId,
+                        'current_price' => $reservedProduct->getPrice()->getCurrentPrice(),
+                        'base_price' => $reservedProduct->getPrice()->getBasePrice(),
                     ]);
-
-                    // Резервируем товар на складе
-                    $this->stockReserver->reserve($stockItem, $orderItem);
-                });
-            });
+                }
+            }
 
             return $order->fresh();
         });
+    }
+
+    public function createExpress(int $userId, PurchasableItemDto $item): Order
+    {
+        return $this->create($userId, [$item]);
     }
 }

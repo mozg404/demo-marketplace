@@ -20,7 +20,7 @@ class MySaleController extends Controller
             ->withBuyer()
             ->isCompleted()
             ->whereSeller(auth()->user())
-            ->paginate(10);
+            ->paginate(config('project.cabinet_sales_count'));
 
         return Inertia::render('my/sales/SaleIndexPage', [
             'products' => ProductSoldData::collect($items),

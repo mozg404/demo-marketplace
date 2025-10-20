@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Observers\FeatureObserver;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Carbon;
 use App\Builders\FeatureQueryBuilder;
@@ -39,6 +41,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
  * @method static FeatureQueryBuilder<static>|Feature whereUpdatedAt($value)
  * @mixin \Eloquent
  */
+#[ObservedBy([FeatureObserver::class])]
 class Feature extends Model
 {
     use HasFactory;

@@ -3,17 +3,14 @@
 namespace App\Services\Demo;
 
 use App\Models\User;
-use App\Services\User\UserAvatarChanger;
-use App\Services\User\UserCreator;
-use App\ValueObjects\Email;
-use App\ValueObjects\Password;
+use App\Services\User\UserService;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Hash;
 
 readonly class DemoUserCreator
 {
     public function __construct(
-        private UserCreator $creator,
-        private UserAvatarChanger $avatarChanger,
+        private UserService $userService,
     ) {
     }
 
@@ -42,15 +39,8 @@ readonly class DemoUserCreator
 
     public function create(string $name, string $email, string $password, string $avatarPath, bool $isAdmin = false, ?Carbon $createdAt = null): User
     {
-        $user = $this->creator->create(
-            name: $name,
-            email: new Email($email),
-            password: new Password($password),
-            emailVerified: true,
-            isAdmin: $isAdmin,
-            createdAt: $createdAt
-        );
-        $this->avatarChanger->changeFromPath($user, $avatarPath);
+        $user = $this->userService->create($name, $email, Hash::make($password), true, $isAdmin, $createdAt);
+        $this->userService->updateAvatarFromPath($user, $avatarPath);
 
         return $user;
     }

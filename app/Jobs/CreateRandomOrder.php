@@ -12,8 +12,8 @@ class CreateRandomOrder implements ShouldQueue
 {
     use Dispatchable, Queueable;
 
-    public function handle(UserQuery $userQuery, DemoOrderCreator $creator): void
+    public function handle(UserQuery $repository, DemoOrderCreator $creator): void
     {
-        $creator->createAndComplete($userQuery->getRandomUser());
+        $creator->createAndComplete($repository->getRandomUser());
     }
 }

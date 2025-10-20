@@ -50,6 +50,7 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
  * @method static UserQueryBuilder<static>|User checkExistsByEmail(string $email)
  * @method static \Database\Factories\UserFactory factory($count = null, $state = [])
  * @method static UserQueryBuilder<static>|User findByEmail(string $email)
+ * @method static UserQueryBuilder<static>|User findOrFail($id, $columns = '[*]')
  * @method static UserQueryBuilder<static>|User hasAvailableProducts()
  * @method static UserQueryBuilder<static>|User newModelQuery()
  * @method static UserQueryBuilder<static>|User newQuery()

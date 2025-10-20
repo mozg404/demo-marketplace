@@ -3,7 +3,7 @@
 namespace App\Observers;
 
 use App\Models\Feedback;
-use App\Services\RatingService;
+use App\Services\Rating\RatingService;
 
 class FeedbackObserver
 {

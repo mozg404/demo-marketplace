@@ -14,10 +14,10 @@ class CreateRandomProduct implements ShouldQueue
     use Dispatchable, Queueable;
 
     public function handle(
-        UserQuery $userQuery,
+        UserQuery $repository,
         DemoProductList $productList,
         DemoProductCreator $productCreator
     ): void {
-        $productCreator->create($userQuery->getRandomUser(), $productList->random());
+        $productCreator->create($repository->getRandomUser(), $productList->random());
     }
 }

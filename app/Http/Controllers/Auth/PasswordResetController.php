@@ -2,13 +2,11 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\DTO\Auth\AuthResetPasswordDTO;
 use App\Exceptions\Auth\PasswordResetException;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Auth\PasswordResetUpdateRequest;
-use App\Services\Auth\PasswordResetter;
+use App\Services\Auth\AuthService;
 use App\Services\Toaster;
-use App\ValueObjects\Email;
-use App\ValueObjects\Password;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -25,17 +23,12 @@ class PasswordResetController extends Controller
     }
 
     public function update(
-        PasswordResetUpdateRequest $request,
-        PasswordResetter $passwordResetter,
+        AuthResetPasswordDTO $dto,
+        AuthService $authService,
         Toaster $toaster,
     ): RedirectResponse {
         try {
-            $passwordResetter->reset(
-                new Email($request->input('email')),
-                new Password($request->input('password')),
-                new Password($request->input('password_confirmation')),
-                $request->input('token'),
-            );
+            $authService->resetPassword($dto);
             $toaster->success('Пароль изменен', 'Повторите попытку входа');
 
             return redirect()->route('login');

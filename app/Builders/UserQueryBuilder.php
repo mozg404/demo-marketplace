@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace App\Builders;
 
-use InvalidArgumentException;
-use App\Exceptions\Auth\UserNotFoundByEmailException;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 
+/**
+ * @method User findOrFail($id, $columns)
+ */
 class UserQueryBuilder extends Builder
 {
     public function findByEmail(string $email): ?User
@@ -28,11 +29,6 @@ class UserQueryBuilder extends Builder
         return $this->whereHas('products', function (ProductQueryBuilder $builder) {
             return $builder->isAvailable();
         });
-    }
-
-    public function checkExistsByEmail(string $email): bool
-    {
-        return $this->where('email', $email)->exists();
     }
 
     public function withoutAdmin(): self

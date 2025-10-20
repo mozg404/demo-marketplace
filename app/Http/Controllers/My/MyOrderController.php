@@ -11,7 +11,6 @@ use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Services\Order\OrderCancelService;
 use App\Services\Order\OrderProcessor;
-use App\Services\Order\OrderQuery;
 use App\Services\PaymentGateway\PaymentService;
 use App\Services\Toaster;
 use App\Support\SeoBuilder;
@@ -27,13 +26,13 @@ class MyOrderController extends Controller
     ) {
     }
 
-    public function index(OrderQuery $orderQuery): Response
+    public function index(): Response
     {
-        $orders = $orderQuery->query()
+        $orders = Order::query()
             ->whereUser(Auth::id())
             ->withItemsCount()
-            ->descOrder()
-            ->paginate(10);
+            ->latest()
+            ->paginate(config('cabinet.cabinet_orders_count'));
 
         return Inertia::render('my/orders/OrderIndexPage', [
             'orders' => OrderForListingData::collect($orders),

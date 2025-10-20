@@ -3,10 +3,6 @@ import AuthLayout from "@/layouts/AuthLayout.vue";
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@components/ui/card/index.js";
 import {Separator} from "@components/ui/separator";
 import {Link} from "@inertiajs/vue3";
-
-const props = defineProps({
-  user: Object
-})
 </script>
 
 <template>
@@ -19,7 +15,7 @@ const props = defineProps({
               Подтвердите Email
             </CardTitle>
             <CardDescription>
-              Перейдите по ссылке в письме на {{ user.email }}
+              Перейдите по ссылке в письме на указанный Email
             </CardDescription>
           </CardHeader>
 

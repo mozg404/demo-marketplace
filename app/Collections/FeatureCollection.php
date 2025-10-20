@@ -3,7 +3,6 @@
 namespace App\Collections;
 
 use App\Models\Feature;
-use App\Models\Product;
 use Illuminate\Database\Eloquent\Collection;
 
 /**
@@ -16,10 +15,6 @@ class FeatureCollection extends Collection
 {
     public function toIdValuePairs(): array
     {
-        return $this->mapWithKeys(function ($feature) {
-            return [
-                $feature->id => $feature->pivot->value
-            ];
-        })->all();
+        return $this->mapWithKeys(fn (Feature $feature) => [$feature->id => $feature->name])->all();
     }
 }

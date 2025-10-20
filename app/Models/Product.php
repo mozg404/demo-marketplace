@@ -9,9 +9,11 @@ use App\Collections\FeatureCollection;
 use App\Collections\ProductCollection;
 use App\Contracts\Seoble;
 use App\Enum\ProductStatus;
+use App\Observers\ProductObserver;
 use App\Support\SeoBuilder;
 use App\ValueObjects\Price;
 use Database\Factories\ProductFactory;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -41,6 +43,8 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
  * @property int|null $category_id
  * @property int $positive_feedbacks_count
  * @property int $negative_feedbacks_count
+ * @property ?int $quantity
+ * @property ?array $reserved_stock_ids
  * @property float $rating
  * @property-read \App\Models\Category|null $category
  * @property-read \App\Models\ProductFeatureValue|null $pivot
@@ -105,6 +109,7 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
  * @method static ProductQueryBuilder<static>|Product withStockItemsCount()
  * @mixin \Eloquent
  */
+#[ObservedBy(ProductObserver::class)]
 class Product extends Model implements Seoble, HasMedia
 {
     use HasFactory;
@@ -120,6 +125,8 @@ class Product extends Model implements Seoble, HasMedia
         'status',
         'image',
         'category_id',
+        'description',
+        'instruction',
     ];
 
     protected function casts(): array
@@ -248,14 +255,14 @@ class Product extends Model implements Seoble, HasMedia
         ];
     }
 
-    public function toArray(): array
-    {
-        $array = parent::toArray();
-        $array['price'] = $this->price->toArray();
-        $array['preview'] = $this->preview;
-
-        return $array;
-    }
+//    public function toArray(): array
+//    {
+//        $array = parent::toArray();
+//        $array['price'] = $this->price->toArray();
+//        $array['preview'] = $this->preview;
+//
+//        return $array;
+//    }
 
     public function user(): BelongsTo
     {

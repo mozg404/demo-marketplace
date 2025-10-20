@@ -2,17 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use Throwable;
+use App\DTO\Product\PurchasableItemDto;
 use App\Exceptions\Balance\InsufficientFundsException;
-use App\Exceptions\Product\ProductUnavailableException;
 use App\Exceptions\Product\NotEnoughStockException;
-use App\Models\Product;
-use App\Services\Order\ExpressOrderCreator;
+use App\Exceptions\Product\ProductUnavailableException;
+use App\Services\Order\OrderCreator;
 use App\Services\Order\OrderFromCartCreator;
 use App\Services\Order\OrderProcessor;
 use App\Services\PaymentGateway\PaymentService;
 use App\Services\Toaster;
 use Illuminate\Http\RedirectResponse;
+use Throwable;
 
 class CheckoutController extends Controller
 {
@@ -27,8 +27,7 @@ class CheckoutController extends Controller
         PaymentService $paymentService,
     ): RedirectResponse {
         try {
-            $user = auth()->user();
-            $order = $creator->create($user);
+            $order = $creator->create(auth()->id());
 
             try {
                 $processor->process($order);
@@ -53,14 +52,13 @@ class CheckoutController extends Controller
     }
 
     public function express(
-        Product $product,
-        ExpressOrderCreator $creator,
+        int $productId,
+        OrderCreator $creator,
         OrderProcessor $processor,
         PaymentService $paymentService,
     ): RedirectResponse {
         try {
-            $user = auth()->user();
-            $order = $creator->create($user, $product);
+            $order = $creator->createExpress(auth()->id(), new PurchasableItemDto($productId));
 
             try {
                 $processor->process($order);

@@ -19,6 +19,7 @@
         "laravel/tinker": "^2.10.1",
         "meilisearch/meilisearch-php": "^1.15",
         "mews/purifier": "^3.4",
+        "predis/predis": "^3.2",
         "spatie/laravel-data": "^4.15",
         "spatie/laravel-medialibrary": "^11.14",
         "tightenco/ziggy": "^2.5",
